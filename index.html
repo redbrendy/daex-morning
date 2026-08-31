@@ -18,12 +18,12 @@
 <title>⏰ 덱스모닝</title>
 
 <!-- 🔗 링크를 카톡·슬랙 등에 공유했을 때 보이는 배너 미리보기 (Open Graph) -->
-<meta name="description" content="덱스레이디들의 성장시간 — 월~금 기상 챌린지 (9.7–10.31)" />
+<meta name="description" content="덱스레이디들의 성장시간 — 아침 기상 챌린지" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="덱스모닝" />
 <meta property="og:url" content="https://redbrendy.github.io/daex-morning/" />
 <meta property="og:title" content="덱스모닝 · 덱스레이디들의 성장시간" />
-<meta property="og:description" content="월~금 아침, 목표 시간에 일어나고 나만의 모닝루틴 2가지를 인증하는 챌린지 (9.7–10.31)" />
+<meta property="og:description" content="목표 시간에 일어나고 나만의 모닝루틴 2가지를 인증하는 아침 챌린지" />
 <meta property="og:image" content="https://redbrendy.github.io/daex-morning/og-banner.png" />
 <meta property="og:image:secure_url" content="https://redbrendy.github.io/daex-morning/og-banner.png" />
 <meta property="og:image:type" content="image/png" />
@@ -33,7 +33,7 @@
 <meta property="og:locale" content="ko_KR" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="덱스모닝 · 덱스레이디들의 성장시간" />
-<meta name="twitter:description" content="월~금 아침, 목표 시간에 일어나고 나만의 모닝루틴 2가지를 인증하는 챌린지 (9.7–10.31)" />
+<meta name="twitter:description" content="목표 시간에 일어나고 나만의 모닝루틴 2가지를 인증하는 아침 챌린지" />
 <meta name="twitter:image" content="https://redbrendy.github.io/daex-morning/og-banner.png" />
 
 <!-- 📱 핸드폰 홈 화면에 저장했을 때 보일 앱 아이콘 설정 -->
@@ -457,6 +457,7 @@ let calFilterId = '';
 let calDetailDate = null;
 let checkinStage = 'grid'; // 'grid'(이름 선택) | 'view'(타인 기록 보기, PIN 불필요) | 'form'(오늘인증 폼, 본인 PIN 필요)
 let viewingMemberId = null; // 현재 "보기 전용"으로 열람 중인 팀원 id (PIN 없이 조회)
+let appReady = false;      // 첫 화면을 그린 뒤부터 실시간 갱신을 화면에 반영
 let pinModalMemberId = null; // PIN 확인 팝업이 떠있는 대상 팀원 id (없으면 null)
 let pinModalScrollTarget = null; // PIN 확인 후 폼에서 스크롤로 이동할 위치(기상/모닝루틴)
 let calDropdownOpen = false; // 캘린더 상단 "더보기" 전체 멤버 목록 펼침 여부
@@ -538,18 +539,17 @@ window.storage = {
 /* 다른 사람이 인증을 올리면 내 화면도 자동으로 갱신되는 실시간 동기화 */
 function attachLiveSync(){
   if(!fdb) return;
+  /* 인증 기록은 attachCheckinSync()에서 '바뀐 것만' 따로 받아요.
+     여기서는 자주 바뀌지 않고 크기도 작은 팀원·설정만 통째로 지켜봅니다. */
   const watch = [
     ['gt:members',  v=>{ members  = JSON.parse(v); }],
-    ['gt:checkins', v=>{ checkins = JSON.parse(v); }],
     ['gt:settings', v=>{ settings = JSON.parse(v); }]
   ];
   watch.forEach(([key, apply])=>{
     fdb.ref(keyToPath(key)).on('value', snap=>{
       if(!snap.exists()) return;
       const incoming = snap.val();
-      const current = key==='gt:members' ? JSON.stringify(members)
-                    : key==='gt:checkins' ? JSON.stringify(checkins)
-                    : JSON.stringify(settings);
+      const current = key==='gt:members' ? JSON.stringify(members) : JSON.stringify(settings);
       if(incoming === current) return; // 내가 방금 저장한 것과 같으면 무시
       try{ apply(incoming); renderAll(); }catch(e){ console.error(e); }
     });
@@ -562,23 +562,21 @@ const DEFAULT_PERIOD_START = '2026-09-07';
 const DEFAULT_PERIOD_END   = '2026-10-31';
 const DEFAULT_GRACE_MIN    = 7;   /* 목표 기상시간 +7분까지는 기상성공 */
 async function loadData(){
-  let mRaw=null, cRaw=null, sRaw=null;
+  let mRaw=null, sRaw=null;
   /* 3개를 하나씩 기다리지 않고 동시에 요청해서 로딩 시간을 최대 1/3로 줄임 */
   const results = await Promise.allSettled([
     window.storage.get('gt:members', true),
-    window.storage.get('gt:checkins', true),
-    window.storage.get('gt:settings', true)
+    window.storage.get('gt:settings', true),
+    loadCheckins()                    /* 인증 기록은 기록별 노드에서 따로 불러와요 */
   ]);
   if(results[0].status === 'fulfilled') mRaw = results[0].value;
-  if(results[1].status === 'fulfilled') cRaw = results[1].value;
-  if(results[2].status === 'fulfilled') sRaw = results[2].value;
+  if(results[1].status === 'fulfilled') sRaw = results[1].value;
 
   members = mRaw ? JSON.parse(mRaw.value) : null;
-  checkins = cRaw ? JSON.parse(cRaw.value) : null;
   settings = sRaw ? JSON.parse(sRaw.value) : settings;
 
   if(members===null){ members = seedMembers(); await saveMembers(); }
-  if(checkins===null){ checkins = seedCheckins(); await saveCheckins(); }
+  if(!Array.isArray(checkins)) checkins = [];
 
   if(!settings.configVersion || settings.configVersion < CONFIG_VERSION){
     settings.periodStart = DEFAULT_PERIOD_START;
@@ -603,8 +601,89 @@ async function loadData(){
   }catch(e){}
 }
 async function saveMembers(){ try{ await window.storage.set('gt:members', JSON.stringify(members), true); }catch(e){ console.error(e); } }
-async function saveCheckins(){ try{ await window.storage.set('gt:checkins', JSON.stringify(checkins), true); }catch(e){ console.error(e); } }
 async function saveSettings(){ try{ await window.storage.set('gt:settings', JSON.stringify(settings), true); }catch(e){ console.error(e); } }
+
+/* ═══ 인증 기록 저장소 ═══════════════════════════════════════════════
+   예전에는 모든 인증 기록을 'gt:checkins' 한 칸에 통째로 넣어서, 누가 인증 하나를
+   저장할 때마다 전체(수천 건)가 다시 저장되고 접속 중인 모든 사람에게 다시 전송됐어요.
+   지금은 '멤버__날짜' 로 칸을 나눠서 바뀐 기록 한 건(약 0.3KB)만 오갑니다.
+   → 인원이 늘어도 전송량이 거의 늘지 않아요.                              */
+const CHECKIN_PATH = 'growtime/checkins_v2';
+const LEGACY_CHECKIN_KEY = 'gt:checkins';
+const memCheckins = {};   /* Firebase 미설정 시 임시 저장 */
+
+function safeKeyPart(v){ return String(v==null?'':v).replace(/[.#$\[\]\/]/g, '_'); }
+function checkinKey(rec){ return safeKeyPart(rec.memberId) + '__' + safeKeyPart(rec.date); }
+function checkinNodeRef(rec){ return fdb.ref(CHECKIN_PATH + '/' + checkinKey(rec)); }
+
+/* 기록 한 건만 저장 */
+async function saveCheckin(rec){
+  if(!rec) return;
+  try{
+    if(fdb) await checkinNodeRef(rec).set(JSON.stringify(rec));
+    else memCheckins[checkinKey(rec)] = JSON.stringify(rec);
+  }catch(e){ console.error('인증 저장 실패', e); toast('저장에 실패했어요 — 잠시 후 다시 시도해주세요'); }
+}
+/* 기록 한 건만 삭제 (메모리 배열에서도 함께 제거) */
+async function removeCheckin(rec){
+  if(!rec) return;
+  const idx = checkins.findIndex(c=>c.id===rec.id);
+  if(idx>=0) checkins.splice(idx,1);
+  try{
+    if(fdb) await checkinNodeRef(rec).remove();
+    else delete memCheckins[checkinKey(rec)];
+  }catch(e){ console.error('인증 삭제 실패', e); }
+}
+/* 들어온 기록 한 건을 메모리 배열에 반영 */
+function applyIncomingCheckin(raw){
+  let rec; try{ rec = typeof raw === 'string' ? JSON.parse(raw) : raw; }catch(e){ return; }
+  if(!rec || !rec.memberId || !rec.date) return;
+  const i = checkins.findIndex(c=>c.memberId===rec.memberId && c.date===rec.date);
+  if(i>=0) checkins[i] = rec; else checkins.push(rec);
+}
+/* 초기 동기화 중에는 렌더가 수십 번 돌지 않도록 살짝 묶어서 그린다 */
+let renderPending = null;
+function scheduleRenderAll(){
+  if(renderPending) return;
+  renderPending = setTimeout(()=>{ renderPending=null; try{ renderAll(); }catch(e){} }, 150);
+}
+/* 바뀐 기록만 실시간으로 받아오기 (전체가 아니라 델타만 전송됨) */
+function attachCheckinSync(){
+  if(!fdb) return;
+  const ref = fdb.ref(CHECKIN_PATH);
+  ref.on('child_added',   s=>{ applyIncomingCheckin(s.val()); if(appReady) scheduleRenderAll(); });
+  ref.on('child_changed', s=>{ applyIncomingCheckin(s.val()); if(appReady) scheduleRenderAll(); });
+  ref.on('child_removed', s=>{
+    const i = checkins.findIndex(c=>checkinKey(c)===s.key);
+    if(i>=0) checkins.splice(i,1);
+    if(appReady) scheduleRenderAll();
+  });
+}
+/* 앱 시작 시 기록 불러오기.
+   리스너를 먼저 붙이고 once('value')로 초기 동기화 완료를 기다리면
+   같은 데이터를 두 번 내려받지 않아요. */
+async function loadCheckins(){
+  checkins = [];
+  if(!fdb){ Object.values(memCheckins).forEach(applyIncomingCheckin); return; }
+  attachCheckinSync();
+  try{ await fdb.ref(CHECKIN_PATH).once('value'); }catch(e){ console.error(e); }
+  if(checkins.length === 0) await migrateLegacyCheckins();
+}
+/* 예전 방식(gt:checkins 통짜 배열)으로 저장된 기록이 있으면 한 번만 옮겨온다 */
+async function migrateLegacyCheckins(){
+  try{
+    const raw = await window.storage.get(LEGACY_CHECKIN_KEY, true);
+    if(!raw || !raw.value) return;
+    const arr = JSON.parse(raw.value);
+    if(!Array.isArray(arr) || arr.length===0) return;
+    for(const rec of arr){
+      if(!rec || !rec.memberId || !rec.date) continue;
+      applyIncomingCheckin(rec);
+      await saveCheckin(rec);
+    }
+    console.info('예전 인증 기록 ' + arr.length + '건을 새 저장 구조로 옮겼어요');
+  }catch(e){ console.error('기록 이관 실패', e); }
+}
 
 /* ---- photo storage (separate keys so the main checkins record stays light) ---- */
 async function savePhoto(key, dataUrl){
@@ -1133,7 +1212,16 @@ function renderDashboard(){
     </div>`;
   }).join('') || `<div class="empty-state"><span class="ic">🌙</span>팀원을 먼저 등록해주세요</div>`;
 
+  /* 오늘이 미션 기간 밖이면 집계가 0으로 나오는 이유를 알려준다 */
+  const tds = todayStr();
+  const outOfPeriod = (tds < settings.periodStart || tds > settings.periodEnd);
+  const periodNotice = outOfPeriod ? `<div class="admin-banner" style="margin-bottom:12px;"><span class="ic">🗓</span>
+      <strong>${tds < settings.periodStart ? '아직 미션 시작 전이에요' : '미션 기간이 끝났어요'}</strong>
+      <p style="margin-top:4px;">미션 기간은 <b>${settings.periodStart} ~ ${settings.periodEnd}</b> 예요.
+      이 기간 밖의 인증은 저장은 되지만 오늘 현황·누적 성공률에는 집계되지 않아요.</p></div>` : '';
+
   el.innerHTML = `
+    ${periodNotice}
     <div class="stat-row three">
       <div class="stat-card"><div class="ic">😆</div><div class="lbl">덱스모닝성공<br/><span class="lbl-sub">기상+목표</span></div><div class="val">${ts.grow}<small>/${ts.total}</small></div></div>
       <div class="stat-card"><div class="ic">⏰</div><div class="lbl">기상성공<br/><span class="lbl-sub">기상만</span></div><div class="val">${ts.wakeSuccess}<small>/${ts.total}</small></div></div>
@@ -1229,6 +1317,7 @@ function renderCheckinGrid(el){
   const pinMember = pinModalMemberId ? members.find(m=>m.id===pinModalMemberId) : null;
 
   el.innerHTML = `
+    ${(todayStr() < settings.periodStart || todayStr() > settings.periodEnd) ? `<div class="admin-banner" style="margin-bottom:10px;"><span class="ic">🗓</span><strong>${todayStr() < settings.periodStart ? '아직 미션 시작 전이에요' : '미션 기간이 끝났어요'}</strong><p style="margin-top:4px;">미션 기간 <b>${settings.periodStart} ~ ${settings.periodEnd}</b> · 지금 인증해도 성공률에는 집계되지 않아요</p></div>` : ''}
     ${isCertBlockedNow() ? `<div class="admin-banner"><span class="ic">🌙</span><strong>새벽 12시~4시는 인증 시간이 아니에요</strong><p style="margin-top:4px;">사진 업로드·모닝루틴 체크·저장이 잠시 제한돼요. 4시 이후 다시 시도해주세요.</p></div>` : ''}
     <div class="section-title" style="margin-top:6px;">오늘의 덱스모닝
       <select id="checkin-name-toggle" class="name-toggle" aria-label="이름으로 바로가기">
@@ -1456,7 +1545,7 @@ function renderCheckinForm(el){
       let rec = getCheckin(member.id, ds);
       if(!rec){ rec = {id:'c_'+Date.now(), memberId:member.id, date:ds}; checkins.push(rec); }
       rec.held = true;
-      await saveCheckins();
+      await saveCheckin(rec);
       toast('주말대체인증으로 표시했어요 ⏳ (캘린더에도 반영돼요)');
       renderCalendar(); renderDashboard(); renderHero(); renderHistory();
     } else {
@@ -1465,7 +1554,7 @@ function renderCheckinForm(el){
       const rec = getCheckin(member.id, ds);
       if(rec && rec.held){
         rec.held = false;
-        await saveCheckins();
+        await saveCheckin(rec);
         toast('주말대체인증 신청을 취소했어요');
         renderCalendar(); renderDashboard(); renderHero(); renderHistory();
       }
@@ -1491,7 +1580,7 @@ function renderCheckinForm(el){
       rec.wakeupPhotoKey = null; rec.activityPhotoKey = null;
       rec.routineChecks = null;
       wakeupPhotoData = null; activityPhotoData = null;
-      await saveCheckins();
+      await saveCheckin(rec);
       toast('오늘은 주말대체인증으로 표시했어요 ⏳');
       renderAll();
       return;
@@ -1506,7 +1595,7 @@ function renderCheckinForm(el){
       rec.wakeupPhotoKey = rec.wakeupPhotoKey || ('gt:photo:'+rec.id+':wakeup');
       await savePhoto(rec.wakeupPhotoKey, wakeupPhotoData);
     }
-    await saveCheckins();
+    await saveCheckin(rec);
     wakeupPhotoData = null;
     toast('인증이 저장됐어요 🌱');
     renderAll();
@@ -1594,8 +1683,8 @@ function setupPhotoUpload(prefix, timeFieldId, savedKey, member, ds){
         /* 기상·루틴 모두 비었고 다른 기록도 없으면 그때만 레코드 자체를 정리 */
         const empty = !rec.wakeupPhoto && !rec.activityPhoto && !rec.wakeupTime && !rec.activityTime
                       && !rec.held && !(rec.routineChecks||[]).some(x=>x&&x.done);
-        if(empty){ const idx = checkins.findIndex(x=>x.id===rec.id); if(idx>=0) checkins.splice(idx,1); }
-        await saveCheckins();
+        if(empty) await removeCheckin(rec);
+        else await saveCheckin(rec);
       }
       if(isWake) wakeupPhotoData=null; else activityPhotoData=null;
       input.value='';
@@ -1658,7 +1747,7 @@ function setupPhotoUpload(prefix, timeFieldId, savedKey, member, ds){
         rec.activityTime = routineCertifiedTime(member, ds, rec.wakeupTime || '') || uploadedAt;
       }
       await savePhoto(photoKey, dataUrl);
-      await saveCheckins();
+      await saveCheckin(rec);
       box.innerHTML = savedPhotoHtml(dataUrl);
       bindSaved(dataUrl);
       /* 기록·캘린더·대시보드에도 즉시 반영 (체크인 화면은 유지) */
@@ -1679,7 +1768,7 @@ function setupPhotoUpload(prefix, timeFieldId, savedKey, member, ds){
           const rec2 = getCheckin(member.id, ds);
           if(rec2){
             rec2.wakeupTime = t; rec2.held = false;
-            await saveCheckins();
+            await saveCheckin(rec2);
             renderHistory(); renderCalendar(); renderDashboard(); renderHero();
             refreshCheckinStatusPill(member, ds);
           }
@@ -1857,7 +1946,7 @@ function setupRoutineTracker(member, ds){
            단, 체크로 인증이 안 되더라도 사진으로 인증한 시각이 있으면 그건 지우지 않고 보존 */
         const photoTime = (rec.activityPhoto && rec.activityTime) ? rec.activityTime : null;
         rec.activityTime = routineCertifiedTime(member, ds, currentWakeTime()) || photoTime;
-        await saveCheckins();
+        await saveCheckin(rec);
         render();
         /* 상태 알약(성공/대기 표시)·캘린더·대시보드에도 즉시 반영 */
         renderCalendar(); renderDashboard(); renderHero(); renderHistory();
@@ -2320,8 +2409,7 @@ function renderHistory(){
         if(target.activityPhotoKey) await window.storage.delete(target.activityPhotoKey);
       }
     }catch(e){}
-    checkins = checkins.filter(c=>c.id!==b.dataset.del);
-    await saveCheckins(); toast('기록과 사진을 삭제했어요'); renderAll();
+    await removeCheckin(target); toast('기록과 사진을 삭제했어요'); renderAll();
   }));
   document.querySelectorAll('[data-edit-rec]').forEach(b=>b.addEventListener('click', ()=>{
     editingRecordId = (editingRecordId===b.dataset.editRec) ? null : b.dataset.editRec;
@@ -2438,7 +2526,7 @@ function bindAdminEditCard(){
     /* 체크/사진을 바탕으로 모닝루틴 인증 시각 재계산 (사진만 있는 경우엔 사진 인증으로 인정) */
     const routineCert = routineCertifiedTime(member, c.date, c.wakeupTime);
     c.activityTime = routineCert || (aeActPhotoNew || c.activityPhoto ? (c.activityTime || nowHM()) : null);
-    await saveCheckins();
+    await saveCheckin(c);
     editingRecordId=null; aeWakePhotoNew=null; aeActPhotoNew=null;
     toast('수정 내용을 저장했어요 🌱');
     renderAll();
@@ -2608,6 +2696,7 @@ async function bootApp(){
     await loadData();
     adminMode = !!(currentUserEmail && settings.adminEmails && settings.adminEmails.includes(currentUserEmail));
     renderAll();
+    appReady = true;          /* 이 시점부터 남의 인증이 들어오면 화면을 갱신해요 */
     hideBootSkeleton();
     saveLocalCache();
     attachLiveSync();
