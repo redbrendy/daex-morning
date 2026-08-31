@@ -557,10 +557,15 @@ function attachLiveSync(){
 }
 
 const CONFIG_VERSION = 5;
-/* 미션 기본 기간 (관리자 설정에서 언제든 바꿀 수 있어요) */
-const DEFAULT_PERIOD_START = '2026-09-07';
-const DEFAULT_PERIOD_END   = '2026-10-31';
-const DEFAULT_GRACE_MIN    = 7;   /* 목표 기상시간 +7분까지는 기상성공 */
+/* 미션 기간 기본값은 '이번 달 1일 ~ 이번 달 마지막 날' (월 단위).
+   한 번 정해진 뒤에는 관리자가 ⚙ 챌린지 설정에서 바꾼 값이 그대로 유지돼요. */
+function defaultPeriodStart(){
+  return fmtDate(new Date(todayDate.getFullYear(), todayDate.getMonth(), 1));
+}
+function defaultPeriodEnd(){
+  return fmtDate(new Date(todayDate.getFullYear(), todayDate.getMonth()+1, 0));
+}
+const DEFAULT_GRACE_MIN = 7;   /* 목표 기상시간 +7분까지는 기상성공 */
 async function loadData(){
   let mRaw=null, sRaw=null;
   /* 3개를 하나씩 기다리지 않고 동시에 요청해서 로딩 시간을 최대 1/3로 줄임 */
@@ -579,9 +584,10 @@ async function loadData(){
   if(!Array.isArray(checkins)) checkins = [];
 
   if(!settings.configVersion || settings.configVersion < CONFIG_VERSION){
-    settings.periodStart = DEFAULT_PERIOD_START;
-    settings.periodEnd   = DEFAULT_PERIOD_END;
-    settings.graceMin    = DEFAULT_GRACE_MIN;
+    /* 이미 관리자가 정해둔 값이 있으면 건드리지 않아요 */
+    if(!settings.periodStart) settings.periodStart = defaultPeriodStart();
+    if(!settings.periodEnd)   settings.periodEnd   = defaultPeriodEnd();
+    if(!settings.graceMin)    settings.graceMin    = DEFAULT_GRACE_MIN;
     /* 비밀번호는 더 이상 앱 데이터에 저장하지 않아요. 관리자는 '이메일'로만 구분하고,
        실제 로그인 비밀번호 확인은 Firebase Authentication이 서버에서 처리해요. */
     if(!Array.isArray(settings.adminEmails) || settings.adminEmails.length===0){
@@ -2585,6 +2591,7 @@ function renderAdminPanel(show){
     <div class="section-title" style="margin:0 0 10px;font-size:20.2px;">⚙ 챌린지 설정</div>
     <div class="form-row"><label>챌린지 시작일</label><input type="date" id="set-start" value="${settings.periodStart}"/></div>
     <div class="form-row"><label>챌린지 종료일</label><input type="date" id="set-end" value="${settings.periodEnd}"/></div>
+    <p style="font-size:16px;color:var(--ink-faint);margin:-4px 0 12px;line-height:1.5;">💡 기본은 <b>월 단위</b>예요 (그 달 1일~말일). 달이 바뀌면 여기서 날짜만 바꿔주면 됩니다.</p>
     <div class="form-row"><label>기상 지각 기준 (분)</label><input type="number" id="set-grace" min="0" max="60" value="${settings.graceMin}"/></div>
     <p style="font-size:16.5px;color:var(--ink-faint);margin:-2px 0 12px;">💡 팀원 PIN은 '팀원' 탭에서 각 팀원을 수정해 관리해요</p>
     <div class="form-actions">
