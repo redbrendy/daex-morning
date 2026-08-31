@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<!-- BUILD-CHECK: 2026-08-31-daex-3 (덱스모닝 / 기상성공·목표인증 분리, 미션 09-07~10-31, 지각유예 7분) -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://daex-moring-default-rtdb.firebaseio.com" crossorigin>
+<!-- 아래 databaseURL 자리에 실제 값을 채운 뒤, 그 주소로 preconnect를 하나 추가하면 더 빨라져요.
+     예: <link rel="preconnect" href="https://실제프로젝트ID-default-rtdb.firebaseio.com" crossorigin> -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --font-display:'Noto Serif KR', 'Pretendard Variable', Pretendard, serif; }
+</style>
+<title>⏰ 덱스모닝</title>
+
+<!-- 📱 핸드폰 홈 화면에 저장했을 때 보일 앱 아이콘 설정 -->
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<meta name="theme-color" content="#2A093E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="덱스모닝" />
+
+<style>
+  :root{
+    --bg:#F3F0F9; --paper:#FFFFFF; --ink:#1E1329; --ink-sub:#665C79; --ink-faint:#A398B5;
+    --line:#E6DFF2; --coral:#8A6415; --coral-dim:#F7EAD2; --green:#4A1D73; --green-dim:#EDE3FA;
+    --gold:#B8912E; --gold-dim:#FBF1D9; --grey:#867C96; --danger:#9B2C4B;
+    --radius:18px; --shadow:0 1px 2px rgba(30,19,41,.05), 0 8px 24px -12px rgba(30,19,41,.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body{ background:var(--bg); color:var(--ink); font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; -webkit-font-smoothing:antialiased; display:flex; justify-content:center; overscroll-behavior-y:contain; word-break:keep-all; overflow-wrap:break-word; }
+  .device{ width:100%; max-width:430px; min-height:100vh; min-height:100dvh; background:var(--bg); position:relative; padding-bottom:92px; }
+  button, a, .tab-btn, .icon-btn, .chip, .wd-pill, .cal-cell, .cal-chip, [role="button"]{ touch-action:manipulation; }
+
+  .app-header{ padding:calc(22px + env(safe-area-inset-top)) 22px 18px; background:linear-gradient(180deg, #EDE6F9 0%, var(--bg) 100%); }
+  .header-top{display:flex; align-items:center; justify-content:space-between;}
+  /* DAEX 배너 */
+  .brand{ position:relative; overflow:hidden; display:flex; align-items:center; gap:12px; background:
+      radial-gradient(120% 160% at 12% 0%, #4A2168 0%, rgba(74,33,104,0) 62%),
+      linear-gradient(135deg, #33113F 0%, #2A093E 52%, #1E0B30 100%);
+    border:1px solid rgba(245,206,74,.34); border-radius:16px; padding:10px 14px 10px 10px; width:100%; box-sizing:border-box;
+    box-shadow:0 8px 22px -12px rgba(42,9,62,.65); }
+  .brand::before{ content:""; position:absolute; inset:0; pointer-events:none; opacity:.16;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='34' height='30' viewBox='0 0 34 30'><path d='M17 1 L33 10 L33 28 L17 37 L1 28 L1 10 Z' fill='none' stroke='%23F5CE4A' stroke-width='1'/></svg>");
+    background-size:34px 30px; }
+  .brand::after{ content:""; position:absolute; right:-26px; top:-30px; width:110px; height:110px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle, rgba(245,206,74,.18) 0%, rgba(245,206,74,0) 70%); }
+  .brand > *{ position:relative; z-index:1; }
+  .brand-mark{ width:48px; height:48px; border-radius:15px; background:#22152F; overflow:hidden; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,.35); } .brand-mark img{ width:100%; height:100%; object-fit:cover; }
+  .brand-name{ font-family:var(--font-display); font-weight:700; font-size:27.8px; letter-spacing:.01em; color:#FFFFFF; text-shadow:0 1px 8px rgba(0,0,0,.35); }
+  .brand-sub{font-size:16px; color:#F0DFA6; font-weight:600; margin-top:3px; line-height:1.45;}
+  .brand-sub u{ text-decoration-color:rgba(245,206,74,.6); }
+  .gear-btn{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--paper); display:flex; align-items:center; justify-content:center; color:var(--ink-sub); font-size:21px; }
+
+  .hero-card{ margin-top:18px; background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px 24px 22px; }
+  .hero-top{display:flex; align-items:flex-end; justify-content:space-between;}
+  .hero-day-label{font-size:16.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; cursor:pointer; transition:opacity .1s ease;}
+  .hero-day-label:active{opacity:.55;}
+  .hero-day{ font-family:var(--font-display); font-weight:600; font-size:51px; line-height:1; margin-top:4px; }
+  .hero-day span{color:var(--coral); font-size:24px; margin-left:2px;}
+  .hero-period{ text-align:right; font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-size:16.5px; color:var(--ink-sub); }
+  .hero-goal-pill{ margin-top:4px; display:inline-block; background:var(--gold-dim); color:#6B5210; font-size:16.5px; font-weight:600; padding:3px 9px; border-radius:99px; }
+  .hero-goal-pill.cumulative{ display:block; margin-top:6px; background:var(--green-dim); color:var(--green); }
+
+  .stem-wrap{margin-top:18px; touch-action:pan-y;}
+  .week-dots{display:flex; justify-content:center; gap:6px; margin-top:11px;}
+  .week-dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .15s ease, transform .15s ease; cursor:pointer;}
+  .week-dot.active{background:var(--green); transform:scale(1.3);}
+  .stem-labels{display:flex; justify-content:space-between; font-size:17.2px; color:var(--ink-sub); margin-bottom:8px;}
+  .hero-member-name{ color:#A8781A; font-weight:900; }
+  .stem-labels b{color:var(--ink); font-weight:700;}
+  .week-bar-track{height:8px; background:var(--bg); border-radius:99px; overflow:hidden; position:relative;}
+  .week-bar-fill{height:100%; border-radius:99px; background:linear-gradient(90deg,#4A1D73,#7B4BB5); transition:width .3s;}
+  .week-days-row{display:flex; justify-content:space-between; gap:5px; margin-top:12px;}
+  .wd-pill{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:7px 0 8px; border-radius:11px; background:var(--bg); color:var(--ink-faint); }
+  .wd-pill .wd-lbl{font-size:15px; font-weight:600;}
+  .wd-pill .wd-mk{font-size:19.5px;}
+  .wd-pill.done{background:var(--green-dim); color:var(--green);}
+  .wd-pill.done.madeup{opacity:.45;}
+  .wd-pill.partial{background:var(--gold-dim); color:#6B5210;}
+  .wd-pill.today{outline:1.5px solid var(--coral); color:var(--coral);}
+  .wd-pill.weekend{border:1px dashed var(--line);}
+  .wd-pill.weekend .wd-lbl{color:var(--ink-faint); font-size:13.5px;}
+  .wd-pill.pill-clickable{cursor:pointer;}
+  .wd-pill.pill-clickable:active{opacity:.6;}
+  .week-hint{font-size:16.5px; color:var(--ink-faint); margin-top:10px; text-align:center; line-height:1.4;}
+  .week-hint b{color:var(--green); font-weight:700;}
+
+  .tab-bar{ position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:rgba(255,255,255,.92); backdrop-filter:blur(10px); border-top:1px solid var(--line); display:flex; padding:8px 4px calc(8px + env(safe-area-inset-bottom)); z-index:50; }
+  .tab-btn{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:var(--ink-faint); font-family:inherit; font-size:15.8px; padding:6px 2px; border-radius:12px; }
+  .tab-btn .ic{font-size:27px; line-height:1;}
+  .tab-btn.active{color:var(--green); font-weight:700;}
+
+  .main{padding:0 22px;}
+  .section{display:none; padding-top:22px;}
+  .section.active{display:block;}
+
+  .stat-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;}
+  .stat-row.three{grid-template-columns:1fr 1fr 1fr;}
+  .stat-row.three .stat-card{padding:11px 8px;}
+  .stat-card{ background:var(--paper); border-radius:20px; padding:18px 18px; box-shadow:var(--shadow); }
+  .stat-card .ic{font-size:24px;}
+  .stat-card .lbl{font-size:16.5px; color:var(--ink-sub); margin-top:6px; line-height:1.3;}
+  .stat-card .lbl-sub{font-size:13.5px; color:var(--ink-faint);}
+  .stat-card .val{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:700; font-size:31.5px; margin-top:2px;}
+  .stat-card .val small{font-size:16.5px; font-weight:500; color:var(--ink-faint); margin-left:2px;}
+
+  .section-title{ font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:600; font-size:24.8px; display:flex; align-items:center; gap:7px; margin:30px 0 14px; }
+  .section-title .tag{ font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-size:15px; background:var(--green-dim); color:var(--green); padding:2px 7px; border-radius:6px; font-weight:700; }
+
+  .legend-card{ background:var(--paper); border-radius:20px; padding:20px; box-shadow:var(--shadow); margin-top:16px; }
+  .legend-card.two-col{ display:grid; grid-template-columns:1fr 1fr; column-gap:14px; row-gap:0; }
+  .legend-card.two-col .legend-row{ border-top:none; padding:7px 0; align-items:flex-start; line-height:1.35; word-break:keep-all; overflow-wrap:break-word; min-width:0; }
+  .legend-card.two-col .legend-row .legend-dot{ margin-top:6px; }
+  .legend-card.two-col .legend-row > span{ min-width:0; }
+  .legend-card .lc-title{font-size:18px; font-weight:700; color:var(--ink-sub); margin-bottom:9px;}
+  .legend-row{display:flex; align-items:flex-start; gap:8px; padding:6px 0; font-size:18.8px; border-top:1px dashed var(--line); word-break:keep-all;}
+  .legend-row > div:not(.legend-dot){flex:1; min-width:0;}
+  .legend-row:first-of-type{border-top:none;}
+  .legend-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-top:8px;}
+  .legend-row b{font-weight:700; margin-right:2px; display:block;}
+  .legend-row span.pt{margin-left:auto; flex-shrink:0; padding-left:8px; font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-size:16.5px; color:var(--ink-faint);}
+
+  .rank-card{background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:6px; margin-top:14px;}
+  .rank-row{display:flex; align-items:center; gap:11px; padding:10px 8px; border-bottom:1px solid var(--line);}
+  .rank-row:last-child{border-bottom:none;}
+  .rank-num{ font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:600; font-size:22.5px; color:var(--ink-faint); width:28px; text-align:center; }
+  .rank-row.r1 .rank-num{color:var(--coral);}
+  .avatar{ width:48px; height:48px; border-radius:13px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:21px; flex-shrink:0; }
+  .rank-info{flex:1; min-width:0;}
+  .rank-name{font-size:20.2px; font-weight:700;}
+  .rank-bar-track{height:5px; background:var(--bg); border-radius:99px; margin-top:5px; overflow:hidden;}
+  .rank-bar-fill{height:100%; border-radius:99px; background:var(--green);}
+  .rank-goal{display:flex; align-items:center; gap:6px; margin-top:5px; font-size:14.5px; color:var(--ink-sub);}
+  .rank-goal > span{flex:none;}
+  .rank-goal b{flex:none; color:#8A6415; font-weight:700;}
+  .rank-bar-track.goal{flex:1; margin-top:0; height:4px; background:var(--gold-dim);}
+  .rank-bar-fill.goal{background:linear-gradient(90deg,#E0AE2E,#F5CE4A);}
+  .rank-pct{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:700; font-size:21px;}
+
+  .week-rank-card{background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:6px; margin-top:14px;}
+  .week-row{display:flex; align-items:center; gap:10px; padding:11px 9px; border-bottom:1px solid var(--line);}
+  .week-row:last-child{border-bottom:none;}
+  .week-row.current{background:var(--coral-dim); border-radius:10px; border-bottom-color:transparent;}
+  .week-tag{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-size:16.5px; font-weight:700; width:38px; flex-shrink:0;}
+  .week-range{font-size:15.8px; color:var(--ink-faint); width:72px; flex-shrink:0;}
+  .week-track{flex:1; height:6px; background:var(--bg); border-radius:99px; overflow:hidden;}
+  .week-fill{height:100%; border-radius:99px; background:var(--green);}
+  .week-row.current .week-track{background:#F7EAD2;}
+  .week-row.current .week-fill{background:var(--coral);}
+  .week-pct{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:700; font-size:18.8px; width:36px; text-align:right; flex-shrink:0;}
+
+  .month-cumulative-card{ margin-top:14px; background:var(--ink); color:#fff; border-radius:var(--radius); padding:18px; display:flex; align-items:center; gap:14px; box-shadow:var(--shadow); }
+  .mc-icon{font-size:39px;}
+  .mc-label{font-size:17.2px; color:#C3B9D6;}
+  .mc-value{font-family:var(--font-display); font-weight:600; font-size:42px; line-height:1.1; margin-top:2px;}
+  .mc-value span{font-size:22.5px; color:#C3B9D6; margin-left:1px;}
+  .mc-sub{font-size:15.8px; color:#7C7768; margin-top:4px;}
+
+  .member-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
+  .member-grid-card{display:flex; align-items:center; gap:10px; background:var(--paper); border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer;}
+  .member-grid-card:active{background:var(--green-dim); border-color:var(--green);}
+  .member-grid-card .av-sm{width:36px; height:36px; border-radius:11px; font-size:16px; flex-shrink:0;}
+  .member-grid-card .nm{font-size:17.2px; font-weight:700; color:var(--ink);}
+
+  .pin-modal-backdrop{position:absolute; inset:0; background:rgba(30,19,41,.5); display:flex; align-items:center; justify-content:center; padding:20px; z-index:5; border-radius:var(--radius);}
+  .pin-modal{background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; width:100%; max-width:320px;}
+  .pin-modal-desc{font-size:14px; color:var(--ink-sub); margin-top:6px; margin-bottom:14px; line-height:1.5; text-align:center; white-space:nowrap;}
+  .pin-modal-actions{display:flex; gap:8px; margin-top:14px;}
+
+  .checkin-form-header{display:flex; align-items:center; margin-top:6px;}
+  .checkin-back-btn{height:42px; padding:0 16px; border-radius:12px; border:1px solid var(--line); background:var(--paper); color:var(--ink-sub); font-size:16.5px; font-weight:600; font-family:inherit; display:flex; align-items:center; gap:5px;}
+  .checkin-who{display:flex; align-items:center; gap:10px; margin-top:10px;}
+  .checkin-who .nm{font-size:19.5px; font-weight:700; color:var(--green);}
+
+  .view-photo-box{margin-top:10px; border-radius:12px; overflow:hidden; cursor:pointer; background:var(--bg); min-height:70px; display:flex; align-items:center; justify-content:center;}
+  .view-photo-box img{width:100%; max-height:220px; object-fit:cover; display:block;}
+  .view-photo-loading{font-size:14px; color:var(--ink-faint); padding:22px;}
+  .view-photo-empty{margin-top:10px; padding:10px 12px; border:1.5px dashed var(--line); border-radius:12px; color:var(--ink-faint); font-size:14.5px; text-align:center;}
+  .view-routine-list{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+  .view-routine-row{display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:10px; background:var(--bg); font-size:16.5px;}
+  .view-routine-row.done{background:var(--green-dim);}
+  .view-routine-check{font-size:16px; flex-shrink:0;}
+  .view-routine-goal{flex:1;}
+
+  .checkin-go-btn{width:100%; display:flex; align-items:center; gap:12px; margin-top:10px; padding:14px 16px; border:none; border-radius:16px; background:var(--green); color:#fff; font-family:inherit; text-align:left; cursor:pointer;}
+  .checkin-go-avatar{width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:17px; flex-shrink:0; box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);}
+  .checkin-go-text{display:flex; flex-direction:column; gap:2px;}
+  .checkin-go-line1{font-size:16.5px; font-weight:600; color:rgba(255,255,255,.85);}
+  .checkin-go-line2{font-size:20px; font-weight:800; color:#fff;}
+
+  .cert-card{background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-top:16px;}
+  .cert-head{display:flex; align-items:center; gap:9px;}
+  .step-badge{ font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-size:15px; font-weight:700; color:#fff; background:var(--coral); padding:3px 8px; border-radius:6px; }
+  .cert-head h4{font-size:21.8px; font-weight:700;}
+  .req{font-size:15px; color:var(--coral); border:1px solid var(--coral); padding:1px 6px; border-radius:99px; margin-left:auto;}
+  .opt{font-size:15px; color:var(--ink-faint); border:1px solid var(--line); padding:1px 6px; border-radius:99px; margin-left:auto;}
+  .cert-desc{font-size:18px; color:var(--ink-sub); margin-top:6px; line-height:1.5; word-break:keep-all; overflow-wrap:break-word;}
+  .cert-desc .li{display:flex; gap:6px; align-items:flex-start;}
+  .cert-desc .li > .bt{flex:none;}
+  .cert-desc .li > span:last-child{flex:1; min-width:0;}
+  .cert-desc .imp{color:#C0392B; font-weight:800;}
+  .time-field{ margin-top:12px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); border-radius:10px; padding:10px 12px; gap:10px; }
+  .time-field label{font-size:18px; color:var(--ink-sub); flex-shrink:0;}
+  .time-field input[type=time]{ font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:700; font-size:24px; border:none; background:none; color:var(--ink); text-align:right; }
+  .status-pill{ display:inline-flex; align-items:center; gap:6px; font-size:18px; font-weight:700; padding:7px 11px; border-radius:10px; margin-top:12px; }
+  .status-pill.perfect{background:var(--green-dim); color:var(--green);}
+  .status-pill.wakeup{background:var(--gold-dim); color:#6B5210;}
+  .status-pill.goalpart{background:#EFE6FB; color:#5A2C8C;}
+  .status-pill.late{background:#F7EAD2; color:#7A5A12;}
+  .status-pill.latewake{background:#F0ECF8; color:var(--ink-sub);}
+  .status-pill.absent{background:#EDE7F6; color:var(--ink-faint);}
+  .status-pill.pending{background:#FBF1D9; color:#7A5A12; border:1px dashed #D9B75A;}
+  textarea.memo{ width:100%; margin-top:12px; border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; font-family:inherit; font-size:24px; resize:vertical; }
+  .routine-list{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  .routine-item{ display:flex; align-items:center; gap:10px; background:#F7F4FC; border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; }
+  .routine-item.done{ background:var(--green-dim); border-color:var(--green); }
+  .routine-item input[type=checkbox]{ width:24px; height:24px; accent-color:var(--green); flex-shrink:0; }
+  .routine-goal{ flex:1; border:none; background:none; font-family:inherit; font-size:17px; font-weight:600; color:var(--ink); min-width:0; }
+  .routine-goal:focus{ outline:none; }
+  .routine-item.done .routine-goal{ text-decoration:line-through; color:var(--ink-sub); }
+  .routine-time{ flex-shrink:0; font-size:15px; font-weight:700; color:var(--green); background:#fff; border-radius:99px; padding:2px 9px; }
+  .routine-status{ margin-top:10px; display:flex; flex-direction:column; gap:5px; font-size:16px; font-weight:600; }
+  .rt-ok{ color:var(--green); }
+  .rt-wait{ color:var(--ink-faint); }
+  .rt-locked{ color:#7A5A12; }
+  .rt-rate{ display:block; color:var(--green); font-weight:700; margin-bottom:4px; }
+  .photo-box{ margin-top:12px; }
+  .photo-placeholder{ border:1.5px dashed var(--line); border-radius:20px; padding:30px 16px; text-align:center; background:var(--bg); cursor:pointer; }
+  .photo-placeholder .ic{font-size:30px; display:block; margin-bottom:6px;}
+  .photo-placeholder p{font-size:18.8px; color:var(--ink-sub); font-weight:600;}
+  .photo-placeholder span{font-size:15.8px; color:var(--ink-faint);}
+  .photo-preview{ position:relative; border-radius:14px; overflow:hidden; background:#1E1329; }
+  .photo-preview img{ width:100%; max-height:420px; min-height:180px; object-fit:contain; display:block; }
+  .photo-remove{ position:absolute; top:8px; right:8px; width:36px; height:36px; border-radius:50%; border:none; background:rgba(28,43,32,.7); color:#fff; font-size:19.5px; cursor:pointer; }
+  .saved-tag{ position:absolute; bottom:8px; left:8px; background:rgba(47,107,79,.85); color:#fff; font-size:14px; font-weight:700; padding:4px 10px; border-radius:99px; pointer-events:none; }
+  .photo-note{ font-size:15.8px; color:var(--ink-faint); text-align:center; margin-top:10px; line-height:1.5; }
+  .photo-viewer-overlay{ position:fixed; inset:0; background:rgba(10,15,10,.9); z-index:999; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .login-input{ width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:12px; font-family:inherit; font-size:16px; margin-top:10px; }
+  .login-error{ color:#9B2C4B; font-size:14.5px; margin-top:10px; }
+  .photo-viewer-overlay img{ max-width:100%; max-height:100%; border-radius:14px; display:block; }
+  .photo-viewer-close{ position:absolute; top:calc(16px + env(safe-area-inset-top)); right:16px; width:40px; height:40px; border-radius:50%; border:none; background:rgba(255,255,255,.15); color:#fff; font-size:18px; }
+  .view-photo-btn{ background:none; border:none; padding:0; font-size:inherit; color:var(--green); font-weight:700; text-decoration:underline; cursor:pointer; }
+  .verified-tag{ color:var(--green); font-weight:700; }
+  .unverified-btn{ background:#EDE7F6; border:1px solid var(--line); border-radius:99px; padding:3px 12px; font-family:inherit; font-size:15.5px; font-weight:700; color:var(--ink-faint); cursor:pointer; }
+  .unverified-tag{ background:#EDE7F6; border:1px solid var(--line); border-radius:99px; padding:3px 12px; font-size:15.5px; font-weight:700; color:var(--ink-faint); display:inline-block; }
+  .hold-card{padding:13px 16px;}
+  .makeup-list{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  .makeup-item{ display:flex; align-items:center; gap:10px; font-size:18px; font-weight:600; cursor:pointer; }
+  .makeup-item input[type=checkbox]{ width:22px; height:22px; accent-color:var(--coral); flex-shrink:0; }
+  .hold-row{display:flex; align-items:flex-start; gap:10px; cursor:pointer;}
+  .hold-row input[type=checkbox]{width:19px; height:19px; margin-top:2px; accent-color:var(--coral); flex-shrink:0;}
+  .hold-row b{font-size:19.5px;}
+  .hold-sub{font-size:16.5px; color:var(--ink-sub); line-height:1.5;}
+
+  .pin-row{display:flex; gap:8px; align-items:center; margin-top:6px;}
+  .pin-input{flex:0 0 50%; max-width:50%; padding:11px 12px; border:1.5px solid var(--line); border-radius:10px; font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-size:24px; letter-spacing:6px; text-align:center;}
+  .btn{font-family:inherit; border:none; cursor:pointer;}
+  .btn-mini{padding:11px 16px; border-radius:10px; background:var(--green); color:#fff; font-weight:700; font-size:18.8px; flex-shrink:0;}
+  .btn-mini.ghost{background:var(--paper); border:1px solid var(--line); color:var(--ink-sub);}
+  .btn-mini.danger{background:var(--danger); color:#fff;}
+  .pin-error{font-size:17.2px; color:var(--danger); margin-top:6px; display:none;}
+  .lock-note{font-size:18px; color:var(--ink-faint); margin-top:10px; display:flex; align-items:center; gap:6px;}
+  .disabled-area{opacity:.4; pointer-events:none;}
+
+  .submit-btn{ width:100%; margin-top:18px; padding:14px; border:none; border-radius:14px; background:var(--green); color:#fff; font-weight:700; font-size:21.8px; font-family:inherit; }
+  .submit-btn:disabled{background:#D5CCE6;}
+  /* 오늘인증 화면에서만 쓰는, 스크롤해도 항상 보이는 저장 버튼 바 (탭바 바로 위에 떠있음) */
+  .checkin-submit-bar{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(72px + env(safe-area-inset-bottom)); width:100%; max-width:430px; padding:0 22px; z-index:45; }
+  .checkin-submit-bar .submit-btn{ margin-top:0; box-shadow:var(--shadow); }
+  .checkin-bottom-spacer{ height:70px; }
+
+  .cal-chip-row{display:flex; gap:8px; align-items:center; margin-top:10px;}
+  .cal-chip{ flex-shrink:0; font-size:17.2px; font-weight:600; padding:6px 12px; border-radius:99px; background:var(--paper); border:1px solid var(--line); color:var(--ink-sub); }
+  .cal-chip.active{background:var(--green); border-color:var(--green); color:#fff;}
+  .cal-chip-more{flex:1 1 0; display:flex; align-items:center; justify-content:center; gap:5px; font-size:15.5px; font-weight:600; padding:8px 10px; border-radius:99px; background:var(--paper); border:1px solid var(--line); color:var(--ink-sub); font-family:inherit; cursor:pointer; white-space:nowrap;}
+  .cal-chip-more-arrow{font-size:12px;}
+  .cal-member-dropdown{margin-top:8px; border:1px solid var(--line); border-radius:14px; padding:8px; max-height:260px; overflow-y:auto; background:var(--paper);}
+  .cal-dropdown-label{font-size:14px; color:var(--ink-faint); padding:4px 8px 8px;}
+  .cal-dropdown-row{display:flex; justify-content:space-between; align-items:center; padding:9px 10px; border-radius:10px; cursor:pointer; font-size:16.5px;}
+  .cal-dropdown-row.active{background:var(--green-dim); color:var(--green); font-weight:700;}
+  .cal-dropdown-pct{font-size:14px; color:var(--coral);}
+  .cal-nav{display:flex; align-items:center; justify-content:space-between; margin-top:16px;}
+  .cal-nav-title{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:600; font-size:23.2px;}
+  .cal-nav button{width:38px; height:38px; border-radius:9px; border:1px solid var(--line); background:var(--paper); color:var(--ink-sub); font-size:15px;}
+  .cal-card{background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px; margin-top:10px;}
+  .cal-card-wrap{position:relative; touch-action:pan-y;}
+  .cal-swipe-arrow{position:absolute; top:50%; transform:translateY(-50%); font-size:22px; color:var(--ink-faint); opacity:.45; pointer-events:none; z-index:1;}
+  .cal-swipe-arrow.left{left:2px;}
+  .cal-swipe-arrow.right{right:2px;}
+  .cal-wd-row{display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:15.8px; color:var(--ink-faint); margin-bottom:6px;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .cal-cell{aspect-ratio:1; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:17.2px; background:#F7F4FC; color:var(--ink-faint); cursor:pointer; transition:transform .1s ease, box-shadow .15s ease; transform:scale(1);}
+  .cal-cell:active{transform:scale(0.86);}
+  .cal-cell.selected{ box-shadow:0 0 0 2.5px var(--ink) inset, inset 0 0 0 999px rgba(255,255,255,.6); font-weight:800; }
+  .cal-cell .leaf{font-size:15px; margin-top:2px;}
+  .cal-cell.other-month{background:#F7F4FC; color:rgba(28,43,32,.22); font-weight:400; border:1px dashed var(--line);}
+  .cal-cell.other-month.perfect{background:#EDE3FA; color:rgba(47,107,79,.35); border:1px dashed var(--green); font-weight:700;}
+  .cal-cell.weekend{ background:#F1ECF9; }
+  .cal-cell.perfect{background:linear-gradient(135deg,#4A1D73,#7B4BB5); color:#fff; font-weight:700;}
+  .cal-cell.goalpart{background:#C6A9E8; color:#33124F; font-weight:700;}
+  .cal-cell.wakeup{background:var(--gold); color:#4A3508; font-weight:700;}   /* ⏰ 기상성공만 */
+  .cal-cell.late{background:#E7CB86; color:#5E4406; font-weight:700;}        /* 🎯 목표인증만 */
+  .cal-cell.latewake{background:#E9E2F4; color:var(--ink-sub); font-weight:700;}
+  .cal-cell.absent{background:#fff; border:1px solid var(--line); color:var(--ink-faint);}
+  .cal-cell.today{outline:2px solid var(--coral); outline-offset:-2px;}
+  .cal-cell.partial{background:var(--gold-dim); color:#6B5210; font-weight:700;}
+  .cal-cell.pending{background:#FBF1D9; color:#7A5A12; border:1px dashed #D9B75A; font-weight:700;}
+  /* 주말대체인증으로 채운 평일 = 성공 배경이되 흐리게 */
+  .cal-cell.madeup{background:linear-gradient(135deg,#4A1D73,#7B4BB5); color:#fff; font-weight:700; opacity:.45;}
+  .cal-cell.madeup-late{background:linear-gradient(135deg,#4A1D73,#7B4BB5); color:#fff; font-weight:700; opacity:.28;}
+  .cal-detail{background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:14px; margin-top:10px;}
+  .cal-history{max-height:420px; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .cal-detail-row{display:flex; align-items:center; gap:9px; padding:8px 0; border-top:1px dashed var(--line);}
+  .cal-detail-row:first-child{border-top:none;}
+
+  .member-card{ display:flex; align-items:center; gap:12px; background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:13px; margin-top:10px; }
+  .member-card .av-lg{width:58px; height:58px; border-radius:15px; font-size:24px;}
+  .member-card .mname{font-size:21px; font-weight:700;}
+  .member-card .mgoal{font-size:17.2px; color:var(--ink-sub); margin-top:2px;}
+  .member-card .mtime{margin-left:8px; text-align:right; font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-size:19.5px; font-weight:700; color:var(--green); flex-shrink:0;}
+  .member-card .mactions{display:flex; gap:6px; margin-left:auto; flex-shrink:0;}
+  .name-toggle{ margin-left:auto; font-family:inherit; font-size:16.5px; font-weight:600; color:var(--green);
+    background:var(--green-dim); border:1.5px solid var(--green); border-radius:99px; padding:6px 12px; max-width:52%; }
+  .icon-btn{width:42px; height:42px; border-radius:11px; border:1px solid var(--line); background:var(--paper); color:var(--ink-sub); font-size:18px;}
+
+  .admin-banner{background:var(--paper); border:1px dashed var(--line); border-radius:14px; padding:16px; text-align:center; color:var(--ink-sub); font-size:18.8px;}
+  .admin-banner .ic{font-size:30px; display:block; margin-bottom:6px;}
+  .form-card{background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:14px; margin-top:10px;}
+  .form-row{margin-bottom:10px;}
+  .form-row label{font-size:17.2px; color:var(--ink-sub); display:block; margin-bottom:5px; font-weight:600;}
+  .form-row input{width:100%; padding:10px 11px; border:1.5px solid var(--line); border-radius:9px; font-family:inherit; font-size:24px;}
+  .color-row{display:flex; gap:7px; flex-wrap:wrap; margin-top:4px;}
+  .color-dot{width:25px; height:25px; border-radius:8px; cursor:pointer; border:2px solid transparent;}
+  .color-dot.sel{border-color:var(--ink);}
+  .form-actions{display:flex; gap:8px; margin-top:12px;}
+  .admin-email-row{display:flex; align-items:center; justify-content:space-between; background:#F7F4FC; border:1px solid var(--line); border-radius:9px; padding:8px 12px; margin-bottom:6px; font-size:15.5px;}
+  .form-actions .btn-mini{flex:1; text-align:center;}
+
+  .filter-row{display:flex; gap:8px; margin-top:10px;}
+  .filter-row select, .filter-row input{flex:1; padding:9px 10px; border:1.5px solid var(--line); border-radius:10px; font-family:inherit; font-size:24px; background:var(--paper);}
+
+  .hist-row{ background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:13px; margin-top:10px; display:flex; gap:11px; align-items:flex-start; }
+  .hist-row .av-sm2{width:40px; height:40px; border-radius:11px; font-size:18px; flex-shrink:0;}
+  .hist-top{display:flex; align-items:center; gap:7px;}
+  .hist-name{font-size:19.5px; font-weight:700;}
+  .hist-date{font-size:16.5px; color:var(--ink-faint); font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; margin-left:auto;}
+  .hist-badge{font-size:15px; font-weight:700; padding:2px 7px; border-radius:99px; margin-top:5px; display:inline-block;}
+  .hist-memo{font-size:18px; color:var(--ink-sub); margin-top:5px; line-height:1.5;}
+  .hist-del{margin-left:6px;}
+
+  .empty-state{text-align:center; padding:30px 10px; color:var(--ink-faint); font-size:18.8px;}
+  .empty-state .ic{font-size:36px; display:block; margin-bottom:8px;}
+
+  .toast{ position:fixed; bottom:96px; left:50%; transform:translateX(-50%) translateY(8px); background:var(--ink); color:#fff; padding:10px 18px; border-radius:99px; font-size:18.8px; z-index:90; box-shadow:var(--shadow); opacity:0; transition:opacity .25s, transform .25s; pointer-events:none; max-width:90%; text-align:center;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .shared-note{font-size:15.8px; color:var(--ink-faint); text-align:center; margin-top:18px; line-height:1.5;}
+  .admin-login-panel{ margin-top:12px; background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:14px; }
+  .admin-login-panel .pin-row{margin-top:8px;}
+</style>
+</head>
+<body>
+<div id="boot-skeleton" style="position:fixed;inset:0;z-index:999;background:linear-gradient(160deg,#33113F 0%,#2A093E 55%,#1B0F28 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnRyIgY3g9IjUwJSIgY3k9IjQyJSIgcj0iNzIlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzNBMjA1MCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3RvcC1jb2xvcj0iIzI2MTYzNyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjBGMjgiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdvbGQiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRTQ4NiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjU1JSIgc3RvcC1jb2xvcj0iI0Y1Q0U0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNFMEFFMkUiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdvbGRUb3AiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRjBCNCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0ZGRDk1RSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZEwiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0Y1Q0U0QSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0Q5QTkzQSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZFIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0UyQjkzRSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0JFOEYyNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIzMCIgcnk9IjMwIiBmaWxsPSJ1cmwoI2JnRykiLz4KICA8ZyBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIuNzUiPgogICAgPGNpcmNsZSBjeD0iMTciIGN5PSIyNCIgcj0iMS4xIi8+PGNpcmNsZSBjeD0iODIiIGN5PSIyMCIgcj0iLjgiLz4KICAgIDxjaXJjbGUgY3g9Ijg4IiBjeT0iNjMiIHI9IjEiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjcwIiByPSIuOSIvPgogICAgPGNpcmNsZSBjeD0iMjYiIGN5PSI4NiIgcj0iLjciLz48Y2lyY2xlIGN4PSI3MiIgY3k9Ijg4IiByPSIuOCIvPgogIDwvZz4KICA8ZyBvcGFjaXR5PSIuNTUiIGZpbGw9IiNGRkY3REMiPgogICAgPHBhdGggZD0iTTE0IDQ3IGwxLjEgMy40IDMuNCAxLjEgLTMuNCAxLjEgLTEuMSAzLjQgLTEuMS0zLjQgLTMuNC0xLjEgMy40LTEuMXoiLz4KICA8L2c+CiAgPCEtLSBoZXhhZ29uIHJpbmcgLS0+CiAgPHBhdGggZmlsbD0idXJsKCNnb2xkKSIgZmlsbC1ydWxlPSJldmVub2RkIgogICAgICAgIGQ9Ik01MCAxNCBMODEuMiAzMiBMODEuMiA2OCBMNTAgODYgTDE4LjggNjggTDE4LjggMzIgWgogICAgICAgICAgIE01MCAyOSBMNjguMiAzOS41IEw2OC4yIDYwLjUgTDUwIDcxIEwzMS44IDYwLjUgTDMxLjggMzkuNSBaIi8+CiAgPCEtLSByaW5nIHNlZ21lbnQgc2VwYXJhdG9ycyAtLT4KICA8ZyBzdHJva2U9IiMyMjE1MkYiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPGxpbmUgeDE9IjUwIiB5MT0iMTQiIHgyPSI1MCIgeTI9IjI5Ii8+CiAgICA8bGluZSB4MT0iODEuMiIgeTE9IjMyIiB4Mj0iNjguMiIgeTI9IjM5LjUiLz4KICAgIDxsaW5lIHgxPSI4MS4yIiB5MT0iNjgiIHgyPSI2OC4yIiB5Mj0iNjAuNSIvPgogICAgPGxpbmUgeDE9IjUwIiB5MT0iODYiIHgyPSI1MCIgeTI9IjcxIi8+CiAgICA8bGluZSB4MT0iMTguOCIgeTE9IjY4IiB4Mj0iMzEuOCIgeTI9IjYwLjUiLz4KICAgIDxsaW5lIHgxPSIxOC44IiB5MT0iMzIiIHgyPSIzMS44IiB5Mj0iMzkuNSIvPgogIDwvZz4KICA8IS0tIGNlbnRlciBpc29tZXRyaWMgY3ViZSAtLT4KICA8ZyBzdHJva2U9IiMyMjE1MkYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGZpbGw9InVybCgjZ29sZFRvcCkiIGQ9Ik01MCAzNiBMNjEuMyA0Mi41IEw1MCA0OSBMMzguNyA0Mi41IFoiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjZ29sZEwpIiAgIGQ9Ik0zOC43IDQyLjUgTDUwIDQ5IEw1MCA2MiBMMzguNyA1NS41IFoiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjZ29sZFIpIiAgIGQ9Ik02MS4zIDQyLjUgTDYxLjMgNTUuNSBMNTAgNjIgTDUwIDQ5IFoiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="덱스모닝" style="width:76px;height:76px;border-radius:22px;box-shadow:0 10px 26px rgba(0,0,0,.45);animation:bootPulse 1.1s ease-in-out infinite;" />
+  <div style="font-size:15px;color:#E7D6A4;letter-spacing:.04em;">불러오는 중…</div>
+</div>
+<style>@keyframes bootPulse{0%,100%{opacity:.5; transform:scale(.92);} 50%{opacity:1; transform:scale(1);}}</style>
+<div class="device">
+
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-mark"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnRyIgY3g9IjUwJSIgY3k9IjQyJSIgcj0iNzIlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzNBMjA1MCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3RvcC1jb2xvcj0iIzI2MTYzNyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjBGMjgiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdvbGQiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRTQ4NiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjU1JSIgc3RvcC1jb2xvcj0iI0Y1Q0U0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNFMEFFMkUiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdvbGRUb3AiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRjBCNCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0ZGRDk1RSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZEwiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0Y1Q0U0QSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0Q5QTkzQSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZFIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0UyQjkzRSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0JFOEYyNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIzMCIgcnk9IjMwIiBmaWxsPSJ1cmwoI2JnRykiLz4KICA8ZyBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIuNzUiPgogICAgPGNpcmNsZSBjeD0iMTciIGN5PSIyNCIgcj0iMS4xIi8+PGNpcmNsZSBjeD0iODIiIGN5PSIyMCIgcj0iLjgiLz4KICAgIDxjaXJjbGUgY3g9Ijg4IiBjeT0iNjMiIHI9IjEiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjcwIiByPSIuOSIvPgogICAgPGNpcmNsZSBjeD0iMjYiIGN5PSI4NiIgcj0iLjciLz48Y2lyY2xlIGN4PSI3MiIgY3k9Ijg4IiByPSIuOCIvPgogIDwvZz4KICA8ZyBvcGFjaXR5PSIuNTUiIGZpbGw9IiNGRkY3REMiPgogICAgPHBhdGggZD0iTTE0IDQ3IGwxLjEgMy40IDMuNCAxLjEgLTMuNCAxLjEgLTEuMSAzLjQgLTEuMS0zLjQgLTMuNC0xLjEgMy40LTEuMXoiLz4KICA8L2c+CiAgPCEtLSBoZXhhZ29uIHJpbmcgLS0+CiAgPHBhdGggZmlsbD0idXJsKCNnb2xkKSIgZmlsbC1ydWxlPSJldmVub2RkIgogICAgICAgIGQ9Ik01MCAxNCBMODEuMiAzMiBMODEuMiA2OCBMNTAgODYgTDE4LjggNjggTDE4LjggMzIgWgogICAgICAgICAgIE01MCAyOSBMNjguMiAzOS41IEw2OC4yIDYwLjUgTDUwIDcxIEwzMS44IDYwLjUgTDMxLjggMzkuNSBaIi8+CiAgPCEtLSByaW5nIHNlZ21lbnQgc2VwYXJhdG9ycyAtLT4KICA8ZyBzdHJva2U9IiMyMjE1MkYiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPGxpbmUgeDE9IjUwIiB5MT0iMTQiIHgyPSI1MCIgeTI9IjI5Ii8+CiAgICA8bGluZSB4MT0iODEuMiIgeTE9IjMyIiB4Mj0iNjguMiIgeTI9IjM5LjUiLz4KICAgIDxsaW5lIHgxPSI4MS4yIiB5MT0iNjgiIHgyPSI2OC4yIiB5Mj0iNjAuNSIvPgogICAgPGxpbmUgeDE9IjUwIiB5MT0iODYiIHgyPSI1MCIgeTI9IjcxIi8+CiAgICA8bGluZSB4MT0iMTguOCIgeTE9IjY4IiB4Mj0iMzEuOCIgeTI9IjYwLjUiLz4KICAgIDxsaW5lIHgxPSIxOC44IiB5MT0iMzIiIHgyPSIzMS44IiB5Mj0iMzkuNSIvPgogIDwvZz4KICA8IS0tIGNlbnRlciBpc29tZXRyaWMgY3ViZSAtLT4KICA8ZyBzdHJva2U9IiMyMjE1MkYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGZpbGw9InVybCgjZ29sZFRvcCkiIGQ9Ik01MCAzNiBMNjEuMyA0Mi41IEw1MCA0OSBMMzguNyA0Mi41IFoiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjZ29sZEwpIiAgIGQ9Ik0zOC43IDQyLjUgTDUwIDQ5IEw1MCA2MiBMMzguNyA1NS41IFoiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjZ29sZFIpIiAgIGQ9Ik02MS4zIDQyLjUgTDYxLjMgNTUuNSBMNTAgNjIgTDUwIDQ5IFoiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="덱스모닝 로고"/></div>
+        <div>
+          <div class="brand-name">덱스모닝</div>
+          <div class="brand-sub">덱스레이디들의 성장시간<br/>월~금은 덱스모닝<br/>(<u>주말대체인증 가능</u>)</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-card" id="hero-card"></div>
+    <div class="admin-login-panel" id="admin-login-panel" style="display:none;"></div>
+  </header>
+
+  <main class="main">
+    <section class="section" id="sec-dashboard"></section>
+    <section class="section active" id="sec-checkin"></section>
+    <section class="section" id="sec-calendar"></section>
+    <section class="section" id="sec-members"></section>
+    <section class="section" id="sec-history"></section>
+  </main>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="checkin"><span class="ic">☀️</span>오늘인증</button>
+    <button class="tab-btn" data-tab="calendar"><span class="ic">📅</span>캘린더</button>
+    <button class="tab-btn" data-tab="dashboard"><span class="ic">📊</span>대시보드</button>
+    <button class="tab-btn" data-tab="history"><span class="ic">📋</span>기록</button>
+    <button class="tab-btn" data-tab="members"><span class="ic">👥</span>팀원</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* ===================== State ===================== */
+const todayDate = new Date();
+let members = [];
+let checkins = [];
+let settings = { graceMin: 7, adminEmails: [], periodStart: null, periodEnd: null, configVersion: 0 };
+let activeTab = 'checkin';
+let heroWeekIdx = null; // null이면 이번 주(현재 주차)로 자동 설정됨
+function changeHeroWeek(delta){
+  const weeks = periodWeeks();
+  if(heroWeekIdx===null) heroWeekIdx = currentWeekIndex();
+  heroWeekIdx = Math.max(0, Math.min(weeks.length-1, heroWeekIdx+delta));
+  renderHero();
+}
+/* 오늘인증 탭에 진입할 때마다 오늘 주차로 초기화 */
+function resetHeroWeekToToday(){
+  heroWeekIdx = currentWeekIndex();
+}
+let selectedMemberId = null;
+let heroVerified = false; // 이 폰에서 PIN 확인을 거쳐 "진짜 본인"으로 확인된 적이 있는지 (없으면 상단 캘린더는 빈 상태로 보여줌)
+let wakeupPhotoData = null;
+let activityPhotoData = null;
+let adminMode = false;
+let calViewDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+let calFilterId = '';
+let calDetailDate = null;
+let checkinStage = 'grid'; // 'grid'(이름 선택) | 'view'(타인 기록 보기, PIN 불필요) | 'form'(오늘인증 폼, 본인 PIN 필요)
+let viewingMemberId = null; // 현재 "보기 전용"으로 열람 중인 팀원 id (PIN 없이 조회)
+let pinModalMemberId = null; // PIN 확인 팝업이 떠있는 대상 팀원 id (없으면 null)
+let pinModalScrollTarget = null; // PIN 확인 후 폼에서 스크롤로 이동할 위치(기상/모닝루틴)
+let calDropdownOpen = false; // 캘린더 상단 "더보기" 전체 멤버 목록 펼침 여부
+const LAST_MEMBER_KEY = 'gt:lastMemberId'; // 이 폰(브라우저)에서 마지막으로 인증했던 사람 기억용
+let editingMemberId = null;
+let addingMember = false;
+let histFilterMember = '';
+let histFilterMonth = '';
+let editingRecordId = null; // 관리자가 지금 수정 중인 과거 인증 기록 id
+let aeWakePhotoNew = null, aeActPhotoNew = null; // 관리자 수정 화면에서 새로 고른(아직 저장 전) 사진
+
+const COLORS = ['#8E4FA8','#B8912E','#7B8B3F','#3E7F94','#3F8A73','#5566B0','#6B4BA0','#A85E8E'];
+
+/* ===================== Date helpers ===================== */
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function startOfWeek(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const dow=x.getDay(); const diff=(dow===0?6:dow-1); x.setDate(x.getDate()-diff); return x; }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function sameDate(a,b){ return fmtDate(a)===fmtDate(b); }
+function todayStr(){ return fmtDate(todayDate); }
+function isPast(d){ return d < new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate()); }
+function isFuture(d){ return d > new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate()); }
+
+/* ===================== Storage ===================== */
+
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCewINdNRxx8xPNgPd8vio2Hbp4phIpSxU",
+  authDomain: "daex-moring.firebaseapp.com",
+  databaseURL: "https://daex-moring-default-rtdb.firebaseio.com",
+  projectId: "daex-moring",
+  storageBucket: "daex-moring.firebasestorage.app",
+  messagingSenderId: "565553815790",
+  appId: "1:565553815790:web:62a4d697d13aafd606d3ff"
+};
+
+const ADMIN_EMAIL = "redbrendy@gmail.com";
+
+/* Firebase가 설정됐으면 온라인 공유 창고를, 아니면 임시 메모리 창고를 사용 */
+const firebaseReady = (typeof firebase !== 'undefined') && firebaseConfig.apiKey !== "수정";
+let fdb = null;
+let auth = null;
+let currentUserEmail = null;
+if(firebaseReady){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    fdb = firebase.database();
+    auth = firebase.auth();
+  }catch(e){
+    showFatalError('Firebase 초기화 오류: ' + e.message);
+  }
+}
+function showFatalError(msg){
+  document.body.innerHTML = `<div style="font-family:sans-serif;padding:32px;max-width:500px;margin:auto;">
+    <h2 style="color:#9B2C4B;">⚠️ 오류가 발생했어요</h2>
+    <p style="background:#FAEEF2;border:1px solid #EED5DD;border-radius:8px;padding:16px;font-size:15px;line-height:1.7;">${msg}</p>
+    <p style="font-size:14px;color:#555;">위 오류 내용을 그대로 복사해서 알려주시면 바로 해결해드릴게요.</p>
+  </div>`;
+}
+function keyToPath(key){ return 'growtime/' + key.replace(/[.#$\[\]\/]/g, '_'); }
+const memoryStore = {}; // Firebase 미설정 시 임시 저장 (새로고침하면 사라짐)
+window.storage = {
+  async get(key){
+    if(fdb){ const snap = await fdb.ref(keyToPath(key)).get(); return snap.exists() ? {key, value: snap.val()} : null; }
+    return (key in memoryStore) ? {key, value: memoryStore[key]} : null;
+  },
+  async set(key, value){
+    if(fdb){ await fdb.ref(keyToPath(key)).set(value); return {key, value}; }
+    memoryStore[key] = value; return {key, value};
+  },
+  async delete(key){
+    if(fdb){ await fdb.ref(keyToPath(key)).remove(); return {key, deleted:true}; }
+    delete memoryStore[key]; return {key, deleted:true};
+  }
+};
+
+/* 다른 사람이 인증을 올리면 내 화면도 자동으로 갱신되는 실시간 동기화 */
+function attachLiveSync(){
+  if(!fdb) return;
+  const watch = [
+    ['gt:members',  v=>{ members  = JSON.parse(v); }],
+    ['gt:checkins', v=>{ checkins = JSON.parse(v); }],
+    ['gt:settings', v=>{ settings = JSON.parse(v); }]
+  ];
+  watch.forEach(([key, apply])=>{
+    fdb.ref(keyToPath(key)).on('value', snap=>{
+      if(!snap.exists()) return;
+      const incoming = snap.val();
+      const current = key==='gt:members' ? JSON.stringify(members)
+                    : key==='gt:checkins' ? JSON.stringify(checkins)
+                    : JSON.stringify(settings);
+      if(incoming === current) return; // 내가 방금 저장한 것과 같으면 무시
+      try{ apply(incoming); renderAll(); }catch(e){ console.error(e); }
+    });
+  });
+}
+
+const CONFIG_VERSION = 5;
+/* 미션 기본 기간 (관리자 설정에서 언제든 바꿀 수 있어요) */
+const DEFAULT_PERIOD_START = '2026-09-07';
+const DEFAULT_PERIOD_END   = '2026-10-31';
+const DEFAULT_GRACE_MIN    = 7;   /* 목표 기상시간 +7분까지는 기상성공 */
+async function loadData(){
+  let mRaw=null, cRaw=null, sRaw=null;
+  /* 3개를 하나씩 기다리지 않고 동시에 요청해서 로딩 시간을 최대 1/3로 줄임 */
+  const results = await Promise.allSettled([
+    window.storage.get('gt:members', true),
+    window.storage.get('gt:checkins', true),
+    window.storage.get('gt:settings', true)
+  ]);
+  if(results[0].status === 'fulfilled') mRaw = results[0].value;
+  if(results[1].status === 'fulfilled') cRaw = results[1].value;
+  if(results[2].status === 'fulfilled') sRaw = results[2].value;
+
+  members = mRaw ? JSON.parse(mRaw.value) : null;
+  checkins = cRaw ? JSON.parse(cRaw.value) : null;
+  settings = sRaw ? JSON.parse(sRaw.value) : settings;
+
+  if(members===null){ members = seedMembers(); await saveMembers(); }
+  if(checkins===null){ checkins = seedCheckins(); await saveCheckins(); }
+
+  if(!settings.configVersion || settings.configVersion < CONFIG_VERSION){
+    settings.periodStart = DEFAULT_PERIOD_START;
+    settings.periodEnd   = DEFAULT_PERIOD_END;
+    settings.graceMin    = DEFAULT_GRACE_MIN;
+    /* 비밀번호는 더 이상 앱 데이터에 저장하지 않아요. 관리자는 '이메일'로만 구분하고,
+       실제 로그인 비밀번호 확인은 Firebase Authentication이 서버에서 처리해요. */
+    if(!Array.isArray(settings.adminEmails) || settings.adminEmails.length===0){
+      settings.adminEmails = (ADMIN_EMAIL && ADMIN_EMAIL!=="수정") ? [ADMIN_EMAIL] : [];
+    }
+    delete settings.adminPw;
+    settings.configVersion = CONFIG_VERSION;
+    await saveSettings();
+  }
+  calViewDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+
+  /* 이 폰(브라우저)에서 마지막으로 인증했던 사람을 기억해서, 맨 위 히어로카드에 바로 보여준다.
+     (오늘인증 폼은 보안을 위해 항상 이름 그리드부터 다시 시작하고, PIN 확인 후에만 열린다) */
+  try{
+    const savedId = localStorage.getItem(LAST_MEMBER_KEY);
+    if(savedId && members.some(m=>m.id===savedId)){ selectedMemberId = savedId; heroVerified = true; }
+  }catch(e){}
+}
+async function saveMembers(){ try{ await window.storage.set('gt:members', JSON.stringify(members), true); }catch(e){ console.error(e); } }
+async function saveCheckins(){ try{ await window.storage.set('gt:checkins', JSON.stringify(checkins), true); }catch(e){ console.error(e); } }
+async function saveSettings(){ try{ await window.storage.set('gt:settings', JSON.stringify(settings), true); }catch(e){ console.error(e); } }
+
+/* ---- photo storage (separate keys so the main checkins record stays light) ---- */
+async function savePhoto(key, dataUrl){
+  try{ await window.storage.set(key, dataUrl, true); return true; }
+  catch(e){ console.error(e); toast('사진 저장에 실패했어요'); return false; }
+}
+async function loadPhoto(key){
+  try{ const r = await window.storage.get(key, true); return r ? r.value : null; }
+  catch(e){ return null; }
+}
+/* Resize + re-encode as JPEG so uploaded camera photos (often 3-8MB) shrink to a couple hundred KB. */
+function compressImage(file, maxDim=1024, quality=0.72){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > h){ if(w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; } }
+        else { if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = ()=> reject(new Error('이미지를 읽을 수 없어요'));
+      img.src = reader.result;
+    };
+    reader.onerror = ()=> reject(new Error('파일을 읽을 수 없어요'));
+    reader.readAsDataURL(file);
+  });
+}
+function dataUrlSizeKB(dataUrl){ return Math.round((dataUrl.length * 0.75) / 1024); }
+/* 미확인 클릭 → 해당 팀원의 PIN 확인 팝업을 띄우고, 확인되면 오늘인증에서 지정된 섹션(기상/모닝루틴)으로 이동 */
+function goToSection(memberId, section){
+  const targetId = section==='wakeup' ? 'block-wakeup' : 'block-activity';
+  checkinStage = 'grid';
+  switchTab('checkin');
+  openPinModal(memberId, targetId);
+}
+function openPhotoOverlay(dataUrl){
+  const overlay = document.createElement('div');
+  overlay.className = 'photo-viewer-overlay';
+  overlay.innerHTML = `<img src="${dataUrl}" alt="인증 사진 크게보기"/><button type="button" class="photo-viewer-close">✕</button>`;
+  overlay.addEventListener('click', ()=> overlay.remove());
+  document.body.appendChild(overlay);
+}
+function openPhotoViewer(key){
+  toast('사진을 불러오는 중...');
+  loadPhoto(key).then(dataUrl=>{
+    if(!dataUrl){ toast('사진을 불러올 수 없어요'); return; }
+    openPhotoOverlay(dataUrl);
+  });
+}
+
+function seedMembers(){
+  return [];   /* 팀원은 관리자(팀원 탭)에서 직접 등록해요 */
+}
+function seedCheckins(){
+  return [];
+}
+
+/* ===================== Domain logic ===================== */
+function timeToMinutes(t){ if(!t) return null; const [h,m]=t.split(':').map(Number); return h*60+m; }
+function isOnTime(member, actualTime){
+  const target = timeToMinutes(member.targetTime), actual = timeToMinutes(actualTime);
+  if(target==null||actual==null) return false;
+  return actual <= target + (settings.graceMin);
+}
+function getCheckin(memberId, dateStr){ return checkins.find(c=>c.memberId===memberId && c.date===dateStr); }
+function hasCheckin(memberId, dateStr){ const c=getCheckin(memberId,dateStr); return !!(c && c.wakeupTime && !c.held); }
+
+function sundayNoonOf(weekStart){ const e=addDays(weekStart,6); return new Date(e.getFullYear(),e.getMonth(),e.getDate(),12,0,0); }
+/* 한 주 안에서 '주말대체인증을 체크한' 평일 목록과 주말 인증 수를 구한다.
+   체크하지 않고 놓친 날은 주말 만회 대상이 아니며 즉시 결석(-100)으로 확정된다. */
+function weekMissedInfo(memberId, weekStart){
+  const member = members.find(m=>m.id===memberId);
+  const heldMissed=[], plainMissed=[]; let weekendChecked=0;
+  for(let i=0;i<7;i++){
+    const d=addDays(weekStart,i); const ds=fmtDate(d);
+    if(member && isOutsideMission(member, ds)) continue; /* 미션 시작 전·등록 전·제외기간은 세지 않음 */
+    if(isWeekend(d)){ if(hasCheckin(memberId,ds)) weekendChecked++; continue; }
+    if(!hasCheckin(memberId,ds)){
+      const c = getCheckin(memberId, ds);
+      if(c && c.held) heldMissed.push(ds); /* 당일 체크한 날은 우선 만회 (-5) */
+      else if(isPast(d)) plainMissed.push(ds); /* 체크 없이 놓친 과거 평일도 만회 가능 (-70, 남는 슬롯이 있을 때만) */
+    }
+  }
+  const missed = heldMissed.concat(plainMissed);
+  return {missed, weekendChecked, heldSet: new Set(heldMissed)};
+}
+/* 미션 범위 밖 날짜 판별: 관리자가 정한 시작일 이전·종료일 이후, (늦게 합류한 팀원의) 등록일 이전,
+   인증제외기간은 성공도 실패도 아닌 '해당 없음'으로 취급해 캘린더·성공률 어디에도 나타나지 않아요 */
+function isOutsideMission(member, dateStr){
+  if(dateStr < settings.periodStart || dateStr > settings.periodEnd) return true;
+  if(isBeforeRegistration(member, dateStr)) return true;
+  if(isExemptDay(member, dateStr)) return true;
+  return false;
+}
+/* 내부 점수(100 기준)를 화면 표시용 10점 만점 기준으로 변환 (예: -50 → -5, -5 → -0.5) */
+function fmtScore10(s){
+  const v = s / 10;
+  const str = Number.isInteger(v) ? String(v) : v.toFixed(1);
+  return v > 0 ? '+' + str : str;
+}
+function dayStatus(member, dateStr){
+  if(isOutsideMission(member, dateStr)) return {code:'none', label:'', score:0, leaf:''};
+  const c = getCheckin(member.id, dateStr);
+  const d0 = parseDate(dateStr);
+  const isToday = dateStr === todayStr();
+  if(c && c.held && !isPast(d0)) return {code:'pending', label:'⏳ 주말대체인증', score:0, leaf:'⏳'};
+  if(!c || !c.wakeupTime || c.held || c.wakeupTime==='보충'){
+    const d = d0;
+    /* ⭐ 수정된 부분: 주말(토·일)이고 그날 인증이 없으면
+       결석(🔥)이 아니라 '해당없음'으로 처리해서 결석 이모지가 뜨지 않게 함 */
+    if(isWeekend(d)) return {code:'none', label:'', score:0, leaf:''};
+    const ws = startOfWeek(d);
+    const info = weekMissedInfo(member.id, ws);
+    const idx = info.missed.indexOf(dateStr);
+    const wasHeld = info.heldSet.has(dateStr);
+    /* ⭐ 오늘 당일 결석은 아직 하루가 끝나지 않았으므로, 불꽃(🔥) 대신
+       다른 미인증과 같은 흰 배경으로만 표시하고 이모지는 붙이지 않음 */
+    if(idx >= 2) return isToday
+      ? {code:'absent', label:'오늘 미인증', score:-100, leaf:''}
+      : {code:'absent', label:'🔥 다시도전', score:-100, leaf:'🔥'};
+    if(idx >= 0 && info.weekendChecked > idx){
+      if(wasHeld) return {code:'madeup', label:'✅ 미리 체크한 대체인증', score:-10, leaf:'✅'};
+      return {code:'madeup-late', label:'🔁 뒤늦게 채운 대체인증(주말)', score:-70, leaf:'🔁'};
+    }
+    if(idx >= 0 && new Date() < sundayNoonOf(ws)){
+      if(wasHeld) return {code:'pending', label:'⏳ 주말대체인증', score:0, leaf:'⏳'};
+      return isToday
+        ? {code:'absent', label:'오늘 미인증', score:-100, leaf:''}
+        : {code:'absent', label:'🔥 다시도전(주말 만회 가능)', score:-100, leaf:'🔥'};
+    }
+    return isToday
+      ? {code:'absent', label:'오늘 미인증', score:-100, leaf:''}
+      : {code:'absent', label:'🔥 다시도전', score:-100, leaf:'🔥'};
+  }
+  /* ⭐ 주말에 실제로 체크인(진짜 대체인증)했고, 그 주에 만회할 평일 결석이 있었다면
+     평소 성공 이모지 대신 '뒤늦게 채운 대체인증(주말)'로 표시함 */
+  if(isWeekend(d0)){
+    const ws2 = startOfWeek(d0);
+    const info2 = weekMissedInfo(member.id, ws2);
+    if(info2.missed.length > 0){
+      return {code:'madeup-late', label:'🔁 뒤늦게 채운 대체인증(주말)', score:-70, leaf:'🔁'};
+    }
+  }
+  const onTime = isOnTime(member, c.wakeupTime);
+  const hasAct = !!c.activityTime;
+  if(!hasAct && dateStr === todayStr()){
+    const win = routineWindow(c.wakeupTime, member.targetTime);
+    if(win!=null && minutesNow_() <= win.max){
+      return {code:'pending', label:'⏳ 모닝루틴 인증 대기 (기상 후 30~60분에 체크)', score:0, leaf:'⏳'};
+    }
+  }
+  const gp = goalProgress(member, dateStr, c.wakeupTime);
+  if(onTime && hasAct){
+    if(gp.rate >= 1) return {code:'perfect', label:'😆 덱스모닝성공 (기상+목표)', score:0, leaf:'😆'};
+    /* 목표 달성률형: 기상은 성공했지만 적어둔 목표를 다 못 채우면 못 채운 만큼만 차감 */
+    return {code:'goalpart', label:`🙂 기상성공 · 목표 ${gp.done}/${gp.total} 달성`, score:-Math.round(50*(1-gp.rate)), leaf:'🙂'};
+  }
+  if(onTime && !hasAct) return {code:'wakeup', label:'⏰ 기상성공 (목표 미인증)', score:-50, leaf:'⏰'};
+  if(!onTime && hasAct){
+    if(gp.rate >= 1) return {code:'late', label:'🎯 목표인증 (기상 실패)', score:-40, leaf:'🎯'};
+    return {code:'late', label:`🎯 목표인증 ${gp.done}/${gp.total} (기상 실패)`, score:-Math.round(50-10*gp.rate), leaf:'🎯'};
+  }
+  return {code:'latewake', label:'미인증 (기상·목표 모두 실패)', score:-50, leaf:''};
+}
+
+function getWeeksOfMonth(year, monthIdx){
+  const first=new Date(year,monthIdx,1), last=new Date(year,monthIdx+1,0);
+  const weeks=[]; let cur=startOfWeek(first);
+  while(cur<=last){ weeks.push({start:new Date(cur), end:addDays(cur,6)}); cur=addDays(cur,7); }
+  return weeks;
+}
+function periodStartDate(){ return parseDate(settings.periodStart); }
+function periodEndDate(){ return parseDate(settings.periodEnd); }
+function periodWeeks(){
+  const start = periodStartDate(), end = periodEndDate();
+  const weeks=[]; let cur=startOfWeek(start);
+  const lastWeekStart = startOfWeek(end);
+  while(cur<=lastWeekStart){ weeks.push({start:new Date(cur), end:addDays(cur,6)}); cur=addDays(cur,7); }
+  return weeks;
+}
+function isWeekend(d){ const dow=d.getDay(); return dow===0 || dow===6; }
+function weekDaysChecked(memberId, week){
+  let weekdayCount=0, weekendCount=0;
+  for(let i=0;i<7;i++){
+    const d=addDays(week.start,i);
+    if(isFuture(d)) continue;
+    const checked = hasCheckin(memberId, fmtDate(d));
+    if(!checked) continue;
+    if(isWeekend(d)) weekendCount++; else weekdayCount++;
+  }
+  const deficit = Math.max(0, 5-weekdayCount);     // 평일 중 못 채운 날 수
+  const makeupUsed = Math.min(weekendCount, deficit, 2); // 주말 인증으로 메꾼 날 수 (최대 2일)
+  return weekdayCount + makeupUsed; // 0~5
+}
+function weekPendingCount(memberId, week){
+  // 주말 보충으로도 아직 못 채운, 평일 중 인증 못한 날 수 (보류 중)
+  let weekdayCount=0, weekendCount=0, weekdayMissedPast=0;
+  for(let i=0;i<7;i++){
+    const d=addDays(week.start,i);
+    if(isFuture(d)) continue;
+    const checked = hasCheckin(memberId, fmtDate(d));
+    if(isWeekend(d)){ if(checked) weekendCount++; }
+    else { if(checked) weekdayCount++; else weekdayMissedPast++; }
+  }
+  const deficit = Math.max(0, 5-weekdayCount);
+  const makeupUsed = Math.min(weekendCount, deficit, 2);
+  return Math.max(0, weekdayMissedPast - makeupUsed);
+}
+function weekRate(memberId, week){ return Math.min(weekDaysChecked(memberId,week),5)/5*100; }
+function teamWeekRate(week){
+  if(members.length===0) return 0;
+  return Math.round(members.reduce((s,m)=>s+weekRate(m.id,week),0)/members.length);
+}
+/* 확정된 결석 일수: 3일째 이상 결석(즉시 확정) + 일요일 정오까지 보충 못한 보류 */
+function memberDefiniteAbsences(memberId){
+  const now = new Date(); let total = 0;
+  periodWeeks().forEach(w=>{
+    if(w.start > todayDate) return;
+    const info = weekMissedInfo(memberId, w.start);
+    info.missed.forEach((ds, idx)=>{
+      if(idx >= 2){ total++; return; }          // 주중 3일째부터는 즉시 결석 확정
+      if(info.weekendChecked > idx) return;      // 주말 보충으로 채워짐
+      if(now >= sundayNoonOf(w.start)) total++;  // 마감 지나면 결석 확정
+    });
+  });
+  return total;
+}
+/* 인증제외기간(휴가·병가 등) 판별: 이 기간의 날짜는 누적성공률 계산에서 완전히 빠져요 */
+function isExemptDay(member, dateStr){
+  if(!member.exemptStart || !member.exemptEnd) return false;
+  return dateStr >= member.exemptStart && dateStr <= member.exemptEnd;
+}
+/* 팀원등록일 이전 날짜 판별: 나중에 합류한 팀원은 등록일 이전 날짜가 누적성공률 계산에서 빠져요
+   (등록일 정보가 없는 예전 팀원은 기존과 동일하게 미션 시작일부터 전부 반영) */
+function isBeforeRegistration(member, dateStr){
+  return !!member.registeredAt && dateStr < member.registeredAt;
+}
+/* 누적성공률 = 100%에서 시작, 미션기간(또는 팀원등록일~목표종료일) 전체 평일 수를 기준으로 인증 결과만큼만 차감
+   (덱스모닝성공 0, 기상성공만 -50, 목표인증만 -40~-45, 기상·목표 모두 실패 -50,
+    미리 체크한 대체인증 -10, 뒤늦게 채운 대체인증(주말) -70, 다시도전(결석) -100)
+   → 100% 기준 = 월~금 기상+루틴 인증을 목표기간 내내 완료
+   → 120% 기준 = 100% 기준 + 주말도 전부 인증 (평일:주말 = 5:2 비율이므로 주말 인증 1건당 50점을 더해야
+      전체 주말을 다 채웠을 때 정확히 +20%p가 되어 120%에 닿는다)
+   인증제외기간 및 등록일 이전 날짜는 분모(필수일수)·분자(차감) 모두에서 빠져요 */
+const WEEKEND_BONUS = 50;
+/* 그 주 5일(월~금)이 전부 완전 성공(0점)인지 확인 — 자진신청 만회(-5점)는 감점이 있으므로 보너스 대상에서 제외됨.
+   아직 결과가 안 정해진(pending) 날이 있으면 판단 보류(null) */
+function weekWeekdayAllZero(memberId, weekStart){
+  const member = members.find(m=>m.id===memberId);
+  for(let i=0;i<5;i++){
+    const d = addDays(weekStart, i);
+    if(isFuture(d) || d > todayDate) continue;
+    const ds = fmtDate(d);
+    if(member && isOutsideMission(member, ds)) continue;
+    if(sameDate(d, todayDate) && !getCheckin(memberId, ds)) continue;
+    const st = dayStatus(member, ds);
+    if(st.code==='pending') return false;
+    if(st.score !== 0) return false;
+  }
+  return true;
+}
+/* month를 넘기면 그 달({year, monthIdx})에 속한 평일만 계산해요 (캘린더 탭의 월별 성공률).
+   생략하면 미션기간 전체 기준입니다. */
+function inMonthOf(ds, month){
+  if(!month) return true;
+  return Number(ds.slice(0,4))===month.year && Number(ds.slice(5,7))===month.monthIdx+1;
+}
+/* 그 달에 미션 대상 평일이 하나라도 있는지 (없으면 성공률을 '–'로 표시) */
+function hasMissionDaysInMonth(member, month){
+  const last = new Date(month.year, month.monthIdx+1, 0).getDate();
+  for(let day=1; day<=last; day++){
+    const d = new Date(month.year, month.monthIdx, day);
+    if(isWeekend(d)) continue;
+    if(!isOutsideMission(member, fmtDate(d))) return true;
+  }
+  return false;
+}
+function memberCumulativeRate(memberId, month){
+  const member = members.find(m=>m.id===memberId);
+  if(!member) return 100;
+  let totalRequired = 0;
+  periodWeeks().forEach(w=>{
+    for(let i=0;i<5;i++){
+      const d = addDays(w.start, i);
+      const ds1 = fmtDate(d);
+      if(!inMonthOf(ds1, month)) continue;
+      if(!isOutsideMission(member, ds1)) totalRequired++;
+    }
+  });
+  if(totalRequired === 0) return 100;
+  let totalDeduction = 0;
+  periodWeeks().forEach(w=>{
+    if(w.start > todayDate) return;
+    for(let i=0;i<5;i++){  // 월~금만
+      const d = addDays(w.start, i);
+      if(isFuture(d) || d > todayDate) continue;
+      const ds2 = fmtDate(d);
+      if(!inMonthOf(ds2, month)) continue;
+      if(isOutsideMission(member, ds2)) continue; // 시작일 이전·등록일 이전·제외기간은 건너뜀
+      /* 당일 반영: 오늘 아직 인증(또는 주말대체인증 체크)이 없으면 즉시 결석으로 계산되고,
+         인증하거나 체크하는 순간 바로 회복돼요 */
+      const st = dayStatus(member, ds2);
+      if(st.code==='pending') continue; // 아직 결과가 정해지지 않은 보류일은 계산에서 제외
+      totalDeduction += st.score;
+    }
+    /* 그 주 금요일까지 지났고, 평일 5일이 전부 완전 성공(0점)이라면 주말 추가 인증에 보너스 (자진신청 만회는 -5점이라 보너스 대상 아님) */
+    const friday = addDays(w.start,4);
+    if(friday <= todayDate){
+      if(weekWeekdayAllZero(memberId, w.start)){
+        for(let i=5;i<7;i++){
+          const d = addDays(w.start,i);
+          if(d > todayDate) continue;
+          if(!inMonthOf(fmtDate(d), month)) continue;
+          if(hasCheckin(memberId, fmtDate(d))) totalDeduction += WEEKEND_BONUS;
+        }
+      }
+    }
+  });
+  return Math.max(0, Math.min(120, Math.round(100 + totalDeduction / totalRequired)));
+}
+function monthWeeksFor(year,monthIdx){ return getWeeksOfMonth(year,monthIdx); }
+function currentWeekIndex(){
+  const weeks = periodWeeks();
+  if(weeks.length===0) return 0;
+  /* 시:분:초를 빼고 '날짜'만으로 비교해야 해요. 그렇지 않으면 각 주의 마지막 날(일요일)
+     자정(00:00)이 지난 시각에는 어느 주에도 안 걸쳐서 엉뚱하게 마지막 주로 튕기는 버그가 생겨요. */
+  const today0 = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
+  for(let i=0;i<weeks.length;i++){ if(today0>=weeks[i].start && today0<=weeks[i].end) return i; }
+  if(today0 < weeks[0].start) return 0;
+  return weeks.length-1;
+}
+function elapsedDaysOfPeriod(){
+  const start = periodStartDate(), end = periodEndDate();
+  const endClamped = todayDate<end? todayDate : end;
+  if(endClamped<start) return [];
+  const arr=[]; let d=new Date(start);
+  while(d<=endClamped){ arr.push(fmtDate(d)); d=addDays(d,1); }
+  return arr;
+}
+function memberPointAvg(memberId){
+  const days = elapsedDaysOfPeriod();
+  if(days.length===0) return 0;
+  const member = members.find(m=>m.id===memberId);
+  const total = days.reduce((s,d)=>s+dayStatus(member,d).score,0);
+  return Math.round(total/days.length);
+}
+/* 오늘 현황 집계
+   세 항목은 서로 겹치지 않아요 (한 사람은 셋 중 한 곳에만 들어갑니다)
+   - grow        : 😆 덱스모닝성공 = 기상성공 + 목표인증을 둘 다 해낸 사람
+   - wakeSuccess : ⏰ 기상성공만 = 기상은 성공했지만 목표는 다 못 채운 사람
+   - goalCert    : 🎯 목표인증만 = 목표는 전부 달성했지만 기상은 늦은 사람
+   - held        : ⏳ 오늘을 주말대체인증으로 체크해 둔 사람 수 */
+function todayStats(){
+  const ds = todayStr(); let grow=0, wakeSuccess=0, goalCert=0, held=0;
+  if(ds < settings.periodStart || ds > settings.periodEnd){
+    return {grow, wakeSuccess, goalCert, held, total:0}; /* 미션 시작 전·종료 후엔 전부 0으로, 미인증으로 집계하지 않음 */
+  }
+  let total = 0;
+  members.forEach(m=>{
+    if(isOutsideMission(m, ds)) return; /* 늦은 합류로 아직 시작 전이거나, 오늘이 개인 인증제외기간이면 통계에서 제외 */
+    total++;
+    const c = getCheckin(m.id, ds);
+    if(c && c.held){ held++; return; }
+    const hasWake = !!(c && c.wakeupTime && c.wakeupTime!=='보충' && !c.held);
+    if(!hasWake) return;
+    const onTime = isOnTime(m, c.wakeupTime);
+    const gp = goalProgress(m, ds, c.wakeupTime);
+    const goalOk = !!c.activityTime && gp.rate >= 1;   /* 목표인증 = 적어둔 목표를 전부 달성 */
+    if(onTime && goalOk) grow++;              // 둘 다 성공
+    else if(onTime) wakeSuccess++;            // 기상만 성공
+    else if(goalOk) goalCert++;               // 목표만 성공
+  });
+  return {grow, wakeSuccess, goalCert, held, total};
+}
+
+/* 목표성공률 = 미션기간 중 지나간 평일들의 '목표 달성률' 평균 (%)
+   주말대체인증으로 채운 날은 목표를 따로 판단할 수 없어 분모에서 제외해요 */
+function memberGoalRate(memberId, month){
+  const member = members.find(m=>m.id===memberId);
+  if(!member) return 100;
+  let n=0, sum=0;
+  periodWeeks().forEach(w=>{
+    if(w.start > todayDate) return;
+    for(let i=0;i<5;i++){
+      const d = addDays(w.start, i);
+      if(isFuture(d) || d > todayDate) continue;
+      const ds2 = fmtDate(d);
+      if(!inMonthOf(ds2, month)) continue;
+      if(isOutsideMission(member, ds2)) continue;
+      const st = dayStatus(member, ds2);
+      if(st.code==='pending' || st.code==='none') continue;
+      if(st.code==='madeup' || st.code==='madeup-late') continue; /* 대체인증일은 제외 */
+      n++;
+      const c = getCheckin(member.id, ds2);
+      if(!c || !c.wakeupTime || c.held || c.wakeupTime==='보충') continue; /* 결석 = 0% */
+      sum += goalProgress(member, ds2, c.wakeupTime).rate;
+    }
+  });
+  return n ? Math.round(sum / n * 100) : 100;
+}
+
+/* ===================== Toast ===================== */
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+/* ===================== Render: Hero ===================== */
+function renderHero(){
+  const weeks = periodWeeks();
+  if(heroWeekIdx===null) heroWeekIdx = currentWeekIndex();
+  const wkIdx = Math.max(0, Math.min(weeks.length-1, heroWeekIdx));
+  const week = weeks[wkIdx] || {start:periodStartDate(), end:periodEndDate()};
+  const isCurrentWeek = (wkIdx === currentWeekIndex());
+  const heroMember = heroVerified ? (members.find(m=>m.id===selectedMemberId) || null) : null;
+  const memberDays = heroMember? weekDaysChecked(heroMember.id, week) : 0;
+  const cumRate = heroMember? memberCumulativeRate(heroMember.id) : 0;
+  const ps = periodStartDate(), pe = periodEndDate();
+  const dLeft = Math.max(0, Math.round((week.end - todayDate)/86400000));
+
+  let pills='';
+  const lbls=['월','화','수','목','금','토','일'];
+  for(let i=0;i<7;i++){
+    const d = addDays(week.start,i);
+    const ds = fmtDate(d);
+    const weekend = isWeekend(d);
+    /* ⭐ 주말대체인증으로 채운 평일도 '성공'으로 표시하되, 흐리게(.madeup) 구분해요 */
+    const st0 = (heroMember && !isFuture(d)) ? dayStatus(heroMember, ds) : null;
+    const isMadeup = !!(st0 && (st0.code==='madeup' || st0.code==='madeup-late'));
+    const checked = heroMember? (hasCheckin(heroMember.id,ds) || isMadeup) : false;
+    let cls=weekend?'weekend':'', mk='·';
+    if(sameDate(d,todayDate)){ cls=(cls?cls+' ':'')+'today'; mk='•'; }
+    if(checked){
+      cls=(cls?cls+' ':'')+'done'+(isMadeup?' madeup':'');
+      /* 캘린더 인증안내와 똑같은 이모지를 쓰도록 dayStatus의 leaf를 그대로 사용 */
+      mk = st0 ? (st0.leaf || '😊') : '😊';
+    }
+    /* 지난 날짜는 눌러서 그날 기록(사진 포함)을 캘린더 상세보기에서 바로 볼 수 있게 함 */
+    const clickable = (!isFuture(d) && !sameDate(d,todayDate));
+    if(clickable) cls += ' pill-clickable';
+    pills += `<div class="wd-pill ${cls}" ${clickable?`data-pastdate="${ds}"`:''}><span class="wd-lbl">${lbls[i]}${weekend?' 대체':''}</span><span class="wd-mk">${mk}</span></div>`;
+  }
+  const rangeLbl = `${pad(week.start.getMonth()+1)}.${pad(week.start.getDate())}–${pad(week.end.getMonth()+1)}.${pad(week.end.getDate())}`;
+  const dotsHtml = weeks.map((w,idx)=>`<span class="week-dot ${idx===wkIdx?'active':''}" data-widx="${idx}"></span>`).join('');
+
+  document.getElementById('hero-card').innerHTML = `
+    <div class="hero-top">
+      <div>
+        <div class="hero-day-label" id="hero-month-link" role="button">${ps.getMonth()+1}월 · ${isCurrentWeek?'This Week':rangeLbl} ›</div>
+        <div class="hero-day">${wkIdx+1}<span>주차</span></div>
+      </div>
+      <div class="hero-period">
+        ${pad(ps.getMonth()+1)}.${pad(ps.getDate())} — ${pad(pe.getMonth()+1)}.${pad(pe.getDate())}<br/>
+        <span class="hero-goal-pill">🎯 평일 5일 필수</span>
+        <span class="hero-goal-pill cumulative">📈 누적 ${cumRate}%</span>
+      </div>
+    </div>
+    <div class="stem-wrap" id="hero-swipe-zone">
+      <div class="stem-labels"><span>${heroMember? `<b class="hero-member-name">${heroMember.name}</b>님 `:''}이번 주 <b>${memberDays}</b>/5일 달성</span></div>
+      <div class="week-bar-track"><div class="week-bar-fill" style="width:${Math.min(memberDays,5)/5*100}%"></div></div>
+      <div class="week-days-row">${pills}</div>
+      <div class="week-dots">${dotsHtml}</div>
+      <div class="week-hint">👆 좌우로 스와이프하면 다른 주차를 볼 수 있어요<br/>월~금은 <b>필수 인증</b>, 놓친 날은 <b>주말대체인증</b>으로 채울 수 있어요<br/>(당일 주말대체인증체크시 감점 최소)</div>
+    </div>`;
+  document.getElementById('hero-month-link').addEventListener('click', ()=> switchTab('calendar'));
+  document.querySelectorAll('.week-dot').forEach(dot=>{
+    dot.addEventListener('click', ()=>{ heroWeekIdx = Number(dot.dataset.widx); renderHero(); });
+  });
+  document.querySelectorAll('[data-pastdate]').forEach(pill=>{
+    pill.addEventListener('click', ()=>{
+      calFilterId = '';
+      calDetailDate = pill.dataset.pastdate;
+      calViewDate = new Date(parseDate(calDetailDate).getFullYear(), parseDate(calDetailDate).getMonth(), 1);
+      switchTab('calendar');
+      renderCalendar();
+    });
+  });
+  const swipeZone = document.getElementById('hero-swipe-zone');
+  let heroTouchX=null, heroTouchY=null;
+  swipeZone.addEventListener('touchstart', e=>{
+    heroTouchX = e.touches[0].clientX; heroTouchY = e.touches[0].clientY;
+  }, {passive:true});
+  swipeZone.addEventListener('touchend', e=>{
+    if(heroTouchX===null) return;
+    const dx = e.changedTouches[0].clientX - heroTouchX;
+    const dy = e.changedTouches[0].clientY - heroTouchY;
+    heroTouchX = null; heroTouchY = null;
+    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+      if(dx < 0) changeHeroWeek(1); else changeHeroWeek(-1);
+    }
+  }, {passive:true});
+}
+
+/* ===================== Render: Dashboard ===================== */
+function renderDashboard(){
+  const el = document.getElementById('sec-dashboard');
+  const ts = todayStats();
+  const weeks = periodWeeks();
+  const curIdx = currentWeekIndex();
+
+  const cumAvg = members.length? Math.round(members.reduce((s,m)=>s+memberCumulativeRate(m.id),0)/members.length) : null;
+  const monthDone = periodEndDate() < todayDate;
+  const ps2 = periodStartDate(), pe2 = periodEndDate();
+  const missionRange = `${pad(ps2.getMonth()+1)}.${pad(ps2.getDate())}–${pad(pe2.getMonth()+1)}.${pad(pe2.getDate())}`;
+
+  const sorted = [...members].sort((a,b)=>memberCumulativeRate(b.id)-memberCumulativeRate(a.id));
+  let rankRows = sorted.map((m,i)=>{
+    const pct = memberCumulativeRate(m.id);
+    const gpct = memberGoalRate(m.id);
+    return `<div class="rank-row ${i===0?'r1':''}">
+      <div class="rank-num">${i+1}</div>
+      <div class="avatar" style="background:${m.color}">${m.name[0]}</div>
+      <div class="rank-info">
+        <div class="rank-name">${m.name}</div>
+        <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${Math.min(pct,100)}%"></div></div>
+        <div class="rank-goal"><span>🎯 목표성공률</span><div class="rank-bar-track goal"><div class="rank-bar-fill goal" style="width:${Math.min(gpct,100)}%"></div></div><b>${gpct}%</b></div>
+      </div>
+      <div class="rank-pct">${pct}%</div>
+    </div>`;
+  }).join('') || `<div class="empty-state"><span class="ic">🌙</span>팀원을 먼저 등록해주세요</div>`;
+
+  el.innerHTML = `
+    <div class="stat-row three">
+      <div class="stat-card"><div class="ic">😆</div><div class="lbl">덱스모닝성공<br/><span class="lbl-sub">기상+목표</span></div><div class="val">${ts.grow}<small>/${ts.total}</small></div></div>
+      <div class="stat-card"><div class="ic">⏰</div><div class="lbl">기상성공<br/><span class="lbl-sub">기상만</span></div><div class="val">${ts.wakeSuccess}<small>/${ts.total}</small></div></div>
+      <div class="stat-card"><div class="ic">🎯</div><div class="lbl">목표인증<br/><span class="lbl-sub">목표만</span></div><div class="val">${ts.goalCert}<small>/${ts.total}</small></div></div>
+    </div>
+    <div class="stat-row" style="margin-top:10px; grid-template-columns:1fr;">
+      <div class="stat-card" style="display:flex; align-items:center; gap:12px;"><div class="ic">⏳</div><div class="lbl" style="margin:0; flex:1;">주말대체인증</div><div class="val" style="margin:0;">${ts.held}<small>명</small></div></div>
+    </div>
+
+    <div class="section-title">누적 성공률 <span class="tag">미션기간 전체</span></div>
+    <div class="rank-card">${rankRows}</div>
+
+    <div class="section-title">월 누적성공률 <span class="tag">미션기간 ${missionRange}</span></div>
+    <div class="month-cumulative-card" style="margin-top:8px;">
+      <div class="mc-icon">${monthDone?'📆':'🌳'}</div>
+      <div>
+        <div class="mc-label">미션기간 ${monthDone?'최종':'누적'} 성공률 ${monthDone?'':'(진행중)'}</div>
+        <div class="mc-value">${cumAvg===null?'–':cumAvg}<span>%</span></div>
+        <div class="mc-sub">${monthDone? '확정 기록됨' : '모두 100%에서 시작 · 미인증만큼 차감 + 주말 추가인증 보너스 (최대 120%) · 미션 종료일 최종 기록'}</div>
+      </div>
+    </div>
+
+    <div class="section-title">덱스모닝 하루 규칙 안내</div>
+    <div class="legend-card">
+      <div class="legend-row"><div class="legend-dot" style="background:#4A1D73"></div><div><b>😆 덱스모닝성공</b>기상성공 + 목표인증 (목표 2개 모두 달성)</div><span class="pt">0</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#C6A9E8"></div><div><b>🙂 기상성공 · 목표 1/2</b>기상은 성공, 목표는 절반만 달성</div><span class="pt">-2.5</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#C08A2E"></div><div><b>⏰ 기상성공</b>기상만 성공 (목표 미인증)</div><span class="pt">-5</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#B8912E"></div><div><b>🎯 목표인증</b>목표만 달성 (기상 실패)</div><span class="pt">-4 ~ -4.5</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#DED6EE"></div><div><b>미인증</b>기상·목표 모두 실패</div><span class="pt">-5</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#EDE3FA"></div><div><b>✅ 미리 체크한 대체인증</b>당일 체크해둔 날을 주말에 채운 경우</div><span class="pt">-1</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#C9A24E"></div><div><b>🔁 뒤늦게 채운 대체인증(주말)</b>체크 없이 놓쳤다가 주말에 채운 경우</div><span class="pt">-7</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#DED6EE;border:1px solid #D9D0EA"></div><div><b>🔥 다시도전</b>오늘은 실패, 내일 다시도전</div><span class="pt">-10</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:linear-gradient(135deg,#4A1D73,#7B4BB5)"></div><div><b>🎁 주말 추가인증 보너스</b>평일 5일을 모두 완전 성공한 주에 주말까지 인증하면 보너스가 붙어요</div><span class="pt">+5</span></div>
+    </div>
+    <div class="shared-note">🌿 이 데이터는 이 앱을 여는 모든 사람에게 공유돼요</div>
+  `;
+}
+
+/* ===================== Render: Checkin ===================== */
+function renderCheckin(){
+  const el = document.getElementById('sec-checkin');
+  if(members.length===0){
+    el.innerHTML = `<div class="empty-state" style="margin-top:6px;"><span class="ic">🙍</span>팀원을 먼저 등록해주세요 (팀원 탭)</div>`;
+    return;
+  }
+  if(!selectedMemberId) selectedMemberId = members[0].id;
+  if(checkinStage==='form'){
+    renderCheckinForm(el);
+  } else if(checkinStage==='view'){
+    renderCheckinView(el);
+  } else {
+    renderCheckinGrid(el);
+  }
+}
+
+/* PIN 확인 팝업 열기/닫기: memberId를 넣으면 팝업이 뜨고, scrollTarget이 있으면
+   확인 후 그 위치(기상/모닝루틴)로 자동 스크롤된다 (달력 "미인증" 바로가기용) */
+function openPinModal(memberId, scrollTarget){
+  checkinStage = 'grid'; /* 보기화면 등 어디서 열렸든, PIN 팝업은 이름그리드 위에 뜬다 */
+  pinModalMemberId = memberId;
+  pinModalScrollTarget = scrollTarget || null;
+  renderCheckin();
+}
+function closePinModal(){
+  pinModalMemberId = null;
+  pinModalScrollTarget = null;
+  renderCheckin();
+}
+function confirmMemberSelection(memberId){
+  selectedMemberId = memberId;
+  heroVerified = true;
+  wakeupPhotoData = null; activityPhotoData = null;
+  try{ localStorage.setItem(LAST_MEMBER_KEY, memberId); }catch(e){}
+  const scrollTarget = pinModalScrollTarget;
+  pinModalMemberId = null; pinModalScrollTarget = null;
+  checkinStage = 'form';
+  renderCheckin(); renderHero();
+  if(scrollTarget){
+    setTimeout(()=>{ document.getElementById(scrollTarget)?.scrollIntoView({behavior:'smooth', block:'start'}); }, 200);
+  }
+}
+
+/* ===================== 오늘인증: 1단계(이름 그리드 + PIN 팝업) ===================== */
+function renderCheckinGrid(el){
+  /* ㄱㄴㄷ순 이름 토글 (그리드는 등록순 그대로 유지) */
+  const byName = [...members].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  const nameOptions = byName.map(m=>`<option value="${m.id}" ${viewingMemberId===m.id?'selected':''}>${m.name}</option>`).join('');
+  const cards = members.map(m=>`
+    <div class="member-grid-card" data-id="${m.id}">
+      <div class="avatar av-sm" style="background:${m.color}">${m.name[0]}</div>
+      <div class="nm">${m.name}</div>
+    </div>`).join('');
+  const pinMember = pinModalMemberId ? members.find(m=>m.id===pinModalMemberId) : null;
+
+  el.innerHTML = `
+    ${isCertBlockedNow() ? `<div class="admin-banner"><span class="ic">🌙</span><strong>새벽 12시~4시는 인증 시간이 아니에요</strong><p style="margin-top:4px;">사진 업로드·모닝루틴 체크·저장이 잠시 제한돼요. 4시 이후 다시 시도해주세요.</p></div>` : ''}
+    <div class="section-title" style="margin-top:6px;">오늘의 덱스모닝
+      <select id="checkin-name-toggle" class="name-toggle" aria-label="이름으로 바로가기">
+        <option value="">이름 선택 ▾</option>
+        ${nameOptions}
+      </select>
+    </div>
+    <div class="member-grid" id="checkin-member-grid">${cards}</div>
+    ${pinMember ? `
+    <div class="pin-modal-backdrop" id="pin-modal-backdrop">
+      <div class="pin-modal">
+        <div class="cert-head"><span class="step-badge" style="background:var(--ink)">🔒</span><h4>${pinMember.name}님 본인 확인</h4></div>
+        <p class="pin-modal-desc">PIN 넘버는 핸드폰 끝 4자리 입니다.<br/>인증 사진 업로드시 자동 저장 됩니다.</p>
+        <div class="pin-row" style="justify-content:center;">
+          <input type="password" inputmode="numeric" maxlength="4" class="pin-input" id="pin-input" placeholder="••••" style="flex:0 0 auto; width:160px;"/>
+        </div>
+        <p class="pin-error" id="pin-error">PIN이 올바르지 않습니다</p>
+        <div class="pin-modal-actions">
+          <button type="button" class="btn btn-mini ghost" id="pin-modal-cancel" style="flex:1">취소</button>
+          <button type="button" class="btn btn-mini" id="pin-modal-confirm" style="flex:1">확인</button>
+        </div>
+      </div>
+    </div>` : ''}
+  `;
+
+  const nameToggle = document.getElementById('checkin-name-toggle');
+  if(nameToggle){
+    nameToggle.addEventListener('change', ()=>{
+      const id = nameToggle.value;
+      if(!id) return;
+      viewingMemberId = id;
+      checkinStage = 'view';
+      renderCheckin();
+    });
+  }
+
+  document.querySelectorAll('#checkin-member-grid .member-grid-card').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      viewingMemberId = c.dataset.id;
+      checkinStage = 'view';
+      renderCheckin();
+    });
+  });
+
+  if(pinMember){
+    const pinInput = document.getElementById('pin-input');
+    pinInput.focus();
+    document.getElementById('pin-modal-cancel').addEventListener('click', closePinModal);
+    document.getElementById('pin-modal-backdrop').addEventListener('click', (e)=>{ if(e.target.id==='pin-modal-backdrop') closePinModal(); });
+    const tryConfirm = ()=>{
+      const v = pinInput.value;
+      if(v.length!==4 || v!==pinMember.pin){
+        document.getElementById('pin-error').style.display='block';
+        pinInput.focus();
+        return;
+      }
+      confirmMemberSelection(pinMember.id);
+    };
+    document.getElementById('pin-modal-confirm').addEventListener('click', tryConfirm);
+    pinInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryConfirm(); });
+  }
+}
+
+/* ===================== 오늘인증: 타인 기록 "보기 전용" 화면 (PIN 불필요) ===================== */
+function renderCheckinView(el){
+  const member = members.find(m=>m.id===viewingMemberId) || members[0];
+  const ds = todayStr();
+  const c = getCheckin(member.id, ds) || {};
+  const st = dayStatus(member, ds);
+  const goals = memberGoals(member).filter(g=>g);
+  const checks = (c.routineChecks) || [null,null];
+
+  const photoBox = (id, key)=> key
+    ? `<div class="view-photo-box" id="${id}"><span class="view-photo-loading">사진 불러오는 중...</span></div>`
+    : `<div class="view-photo-empty">아직 올린 사진이 없어요</div>`;
+
+  const routineRows = goals.length ? goals.map((g,i)=>{
+    const ck = checks[i];
+    return `<div class="view-routine-row ${ck&&ck.done?'done':''}">
+      <span class="view-routine-check">${ck&&ck.done ? '✅' : '⬜'}</span>
+      <span class="view-routine-goal">${g}</span>
+      ${ck&&ck.done&&ck.time? `<span class="routine-time">✓ ${ck.time}</span>` : ''}
+    </div>`;
+  }).join('') : `<p class="cert-desc">등록된 모닝루틴이 없어요</p>`;
+
+  el.innerHTML = `
+    <div class="checkin-form-header">
+      <button type="button" class="checkin-back-btn" id="btn-view-back" aria-label="뒤로가기">← 뒤로가기</button>
+    </div>
+    <button type="button" class="checkin-go-btn" id="btn-view-edit-mine">
+      <span class="checkin-go-avatar" style="background:${member.color}">${member.name[0]}</span>
+      <span class="checkin-go-text">
+        <span class="checkin-go-line1">${member.name}님의 오늘 기록</span>
+        <span class="checkin-go-line2">인증하러가기 →</span>
+      </span>
+    </button>
+
+    ${(c.wakeupTime || c.held) ? `<div class="status-pill ${st.code}" style="margin-top:12px;">${st.label}${(st.code==='pending' || st.score===0) ? '' : ` · ${fmtScore10(st.score)}점`}</div>` : ''}
+
+    <div id="view-cert-content">
+    ${c.held ? `<div class="cert-card hold-card" style="margin-top:12px;"><span><b>⏳ 오늘은 주말대체인증</b>으로 표시돼 있어요</span></div>` : `
+    <div class="cert-card" style="margin-top:16px;">
+      <div class="cert-head"><span class="step-badge">STEP 1</span><h4>기상 인증</h4></div>
+      <p class="cert-desc">${c.wakeupTime ? `기상시간 <b>${c.wakeupTime}</b>` : '아직 기록이 없어요'}</p>
+      ${photoBox('view-wakeup-photo-box', c.wakeupPhotoKey)}
+    </div>
+
+    <div class="cert-card">
+      <div class="cert-head"><span class="step-badge" style="background:var(--green)">STEP 2</span><h4>모닝루틴</h4></div>
+      <div class="view-routine-list">${routineRows}</div>
+      ${c.activityPhotoKey ? photoBox('view-activity-photo-box', c.activityPhotoKey) : ''}
+    </div>`}
+    </div>
+  `;
+
+  document.getElementById('btn-view-back').addEventListener('click', ()=>{
+    checkinStage = 'grid';
+    viewingMemberId = null;
+    renderCheckin();
+  });
+  document.getElementById('btn-view-edit-mine').addEventListener('click', ()=> openPinModal(member.id, null));
+
+  /* 이름을 누르면 그 사람의 인증 내용(기상인증/모닝루틴)이 바로 눈에 보이도록,
+     화면을 자동으로 살짝 내려서 인증 카드가 보이는 위치까지 스크롤해준다 */
+  setTimeout(()=>{
+    document.getElementById('view-cert-content')?.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 80);
+
+  /* 사진은 '탭해야 보이는 안내칸'이 아니라, 압축된 미리보기 이미지를 바로 불러와 보여준다.
+     (미리보기를 한 번 더 탭하면 원본 크기로 크게 볼 수 있음) */
+  const loadIntoBox = (boxId, key)=>{
+    if(!key) return;
+    loadPhoto(key).then(dataUrl=>{
+      const box = document.getElementById(boxId);
+      if(!box) return;
+      if(!dataUrl){ box.outerHTML = '<div class="view-photo-empty">사진을 불러올 수 없어요</div>'; return; }
+      box.innerHTML = `<img src="${dataUrl}" alt="인증 사진 미리보기"/>`;
+      box.addEventListener('click', ()=> openPhotoOverlay(dataUrl));
+    });
+  };
+  loadIntoBox('view-wakeup-photo-box', c.wakeupPhotoKey);
+  loadIntoBox('view-activity-photo-box', c.activityPhotoKey);
+}
+
+/* ===================== 오늘인증: 2단계(PIN 확인 후 실제 인증 폼) ===================== */
+function renderCheckinForm(el){
+  const member = members.find(m=>m.id===selectedMemberId) || members[0];
+  const ds = todayStr();
+  const c = getCheckin(member.id, ds) || {};
+  const st = dayStatus(member, ds);
+
+  el.innerHTML = `
+    ${isCertBlockedNow() ? `<div class="admin-banner"><span class="ic">🌙</span><strong>새벽 12시~4시는 인증 시간이 아니에요</strong><p style="margin-top:4px;">사진 업로드·모닝루틴 체크·저장이 잠시 제한돼요. 4시 이후 다시 시도해주세요.</p></div>` : ''}
+    <div class="checkin-form-header">
+      <button type="button" class="checkin-back-btn" id="btn-checkin-back" aria-label="뒤로가기">← 뒤로가기</button>
+    </div>
+    <div class="checkin-who">
+      <div class="avatar av-sm" style="background:${member.color}">${member.name[0]}</div>
+      <div class="nm">${member.name}님, 안녕하세요</div>
+    </div>
+
+    <div id="checkin-form-area">
+      <div class="cert-card" id="block-wakeup">
+        <div class="cert-head"><span class="step-badge">STEP 1</span><h4>기상 인증</h4><span class="req">필수</span></div>
+        <p class="cert-desc"><span class="li"><span class="bt">✔</span><span>기상목표시간 <b>${member.targetTime}</b> 후 ${settings.graceMin}분까지 기상성공</span></span><span class="li"><span class="bt">✔</span><span>🪥 <b>칫솔에 치약을 짜서 시간이 보이도록</b> 찍은 사진을 첨부하세요</span></span></p>
+        <div class="photo-box" id="wakeup-photo-box">${wakeupPhotoData ? photoPreviewHtml(wakeupPhotoData) : photoPlaceholderHtml('wakeup-camera-icon','기상 인증 사진 업로드', c.wakeupPhotoKey? '저장된 사진을 불러오는 중...' : '치약 짠 칫솔 + 타임스탬프가 함께 보이는 사진을 첨부하세요')}</div>
+        <input type="file" id="wakeup-photo-input" accept="image/*" hidden />
+        <div class="time-field"><label>기상시간</label><input type="time" id="ci-wakeup-time" value="${c.wakeupTime||''}"/></div>
+      </div>
+
+      <div class="cert-card" id="block-activity">
+        <div class="cert-head"><span class="step-badge" style="background:var(--green)">STEP 2</span><h4>모닝루틴</h4><span class="opt">해빗트래커</span></div>
+        <p class="cert-desc"><span class="li"><span class="bt">✔</span><span><span class="imp">기상 인증(STEP 1)을 먼저 완료</span>해야 체크할 수 있어요</span></span><span class="li"><span class="bt">✔</span><span>나만의 모닝루틴 목표를 <b>2개</b> 적어두세요</span></span><span class="li"><span class="bt">✔</span><span><span class="imp">2개 모두 체크해야 만점</span> — 1개만 체크하면 달성률 50%만 반영돼요 (-2.5점)</span></span><span class="li"><span class="bt">✔</span><span><span class="imp">중요:</span> 기상 후 <b>30분~60분 이내</b>에 체크된 루틴만 인정돼요. 이후 체크는 누적성공률에 반영되지 않아요</span></span><span class="li"><span class="bt">✔</span><span>목표문구는 언제든 수정가능</span></span><span class="li"><span class="bt">✔</span><span>모닝루틴 사진으로 인증가능</span></span></p>
+        <div class="routine-list" id="routine-list"></div>
+        <div class="routine-status" id="routine-status"></div>
+        <p class="cert-desc" style="margin-top:14px;">📷 또는 인증사진으로 대신할 수도 있어요 (선택)</p>
+        <div class="photo-box" id="activity-photo-box">${photoPlaceholderHtml('activity-camera-icon','모닝루틴 인증사진 (선택)', c.activityPhotoKey? '저장된 사진을 불러오는 중...' : '루틴과 어울리는 사진을 타임스탬프와 함께 올려주세요')}</div>
+        <input type="file" id="activity-photo-input" accept="image/*" hidden />
+      </div>
+
+      <div class="cert-card hold-card">
+        <label class="hold-row" style="cursor:pointer;">
+          <input type="checkbox" id="ci-self-hold" ${c.held?'checked':''}/>
+          <span><b>⏳ 주말 대체인증</b><br/><span class="hold-sub" style="color:#C0392B; font-weight:800;">주말대체인증 체크시 감점이 적어요</span></span>
+        </label>
+      </div>
+
+      ${c.wakeupTime ? `<div class="status-pill ${st.code}">${st.label}${(st.code==='pending' || st.score===0) ? '' : ` · ${fmtScore10(st.score)}점`}</div>` : ''}
+
+      <p class="photo-note">📎 첨부한 사진은 압축되어 저장되며, 인증을 저장한 뒤에도 캘린더·기록 화면에서 계속 확인할 수 있어요</p>
+      <div class="checkin-bottom-spacer"></div>
+    </div>
+
+    <div class="checkin-submit-bar">
+      <button class="submit-btn" id="btn-submit-checkin">✓ ${ds} 인증 저장</button>
+    </div>
+  `;
+
+  document.getElementById('btn-checkin-back').addEventListener('click', ()=>{
+    checkinStage = 'grid';
+    renderCheckin();
+  });
+
+  setupPhotoUpload('wakeup', 'ci-wakeup-time', c.wakeupPhotoKey, member, ds);
+  setupPhotoUpload('activity', null, c.activityPhotoKey, member, ds);
+  setupRoutineTracker(member, ds);
+
+  /* 시간 입력칸을 탭하면 전체 선택되어 backspace/새 입력이 바로 가능 */
+  document.querySelectorAll('.time-field input[type=time]').forEach(inp=>{
+    inp.addEventListener('focus', ()=>{ try{ inp.select(); }catch(e){} });
+    inp.addEventListener('click', ()=>{ try{ inp.select(); }catch(e){} });
+  });
+
+  const selfHold = document.getElementById('ci-self-hold');
+  function syncHoldUI(){
+    const held = selfHold.checked;
+    document.getElementById('block-wakeup').classList.toggle('disabled-area', held);
+    document.getElementById('block-activity').classList.toggle('disabled-area', held);
+    document.getElementById('btn-submit-checkin').textContent = held ? `✓ ${ds} 주말대체인증 저장` : `✓ ${ds} 인증 저장`;
+  }
+  selfHold.addEventListener('change', async ()=>{
+    syncHoldUI();
+    if(selfHold.checked){
+      /* 체크하는 즉시 주말대체인증 상태로 저장해서 캘린더·대시보드에 바로 반영 */
+      let rec = getCheckin(member.id, ds);
+      if(!rec){ rec = {id:'c_'+Date.now(), memberId:member.id, date:ds}; checkins.push(rec); }
+      rec.held = true;
+      await saveCheckins();
+      toast('주말대체인증으로 표시했어요 ⏳ (캘린더에도 반영돼요)');
+      renderCalendar(); renderDashboard(); renderHero(); renderHistory();
+    } else {
+      /* 체크를 해제하면, 이전에 저장돼 있던 보류(주말대체인증) 상태를 즉시 취소해서
+         전체 인증을 새로 채우기 전이라도 캘린더 등에 바로 반영되게 한다 */
+      const rec = getCheckin(member.id, ds);
+      if(rec && rec.held){
+        rec.held = false;
+        await saveCheckins();
+        toast('주말대체인증 신청을 취소했어요');
+        renderCalendar(); renderDashboard(); renderHero(); renderHistory();
+      }
+    }
+  });
+  syncHoldUI();
+
+  const submitBtn = document.getElementById('btn-submit-checkin');
+  submitBtn.addEventListener('click', async ()=>{
+    /* 신원 확인(PIN)은 이름 그리드 단계에서 이미 끝났으므로, 여기서는 인증 내용만 검사한다 */
+    if(!selfHold.checked){
+      if(isCertBlockedNow()){ certBlockedToast(); return; }
+      const wt = document.getElementById('ci-wakeup-time').value;
+      if(!wt){ toast('기상 시간은 필수예요'); return; }
+      if(!wakeupPhotoData && !c.wakeupPhoto){ toast('기상 인증 사진을 첨부해주세요'); return; }
+    }
+    let rec = getCheckin(member.id, ds);
+    if(!rec){ rec = {id:'c_'+Date.now(), memberId:member.id, date:ds}; checkins.push(rec); }
+    if(selfHold.checked){
+      rec.held = true;
+      rec.wakeupTime = null; rec.activityTime = null; rec.memo = '';
+      rec.wakeupPhoto = false; rec.activityPhoto = false;
+      rec.wakeupPhotoKey = null; rec.activityPhotoKey = null;
+      rec.routineChecks = null;
+      wakeupPhotoData = null; activityPhotoData = null;
+      await saveCheckins();
+      toast('오늘은 주말대체인증으로 표시했어요 ⏳');
+      renderAll();
+      return;
+    }
+    const wt = document.getElementById('ci-wakeup-time').value;
+    rec.held = false;
+    rec.wakeupTime = wt;
+    /* 모닝루틴 인증: 해빗트래커 체크(기상+30~60분 창) 우선, 없으면 인증사진으로 기록된 시각 유지 */
+    rec.activityTime = routineCertifiedTime(member, ds, wt) || rec.activityTime || null;
+    rec.wakeupPhoto = rec.wakeupPhoto || !!wakeupPhotoData;
+    if(wakeupPhotoData){
+      rec.wakeupPhotoKey = rec.wakeupPhotoKey || ('gt:photo:'+rec.id+':wakeup');
+      await savePhoto(rec.wakeupPhotoKey, wakeupPhotoData);
+    }
+    await saveCheckins();
+    wakeupPhotoData = null;
+    toast('인증이 저장됐어요 🌱');
+    renderAll();
+  });
+}
+
+/* ---- photo upload helpers ---- */
+/* 새벽 0시~4시 사이에는 어떤 인증 기록(사진 업로드/체크/저장)도 남기지 못하게 막는다 */
+function isCertBlockedNow(){
+  const h = new Date().getHours();
+  return h>=0 && h<4;
+}
+function certBlockedToast(){
+  toast('🌙 새벽 12시~4시 사이에는 인증할 수 없어요. 4시 이후에 다시 시도해주세요');
+}
+function photoPreviewHtml(dataUrl){
+  return `<div class="photo-preview"><img src="${dataUrl}" alt="인증 사진"/><button type="button" class="photo-remove">✕</button></div>`;
+}
+function savedPhotoHtml(dataUrl){
+  return `<div class="photo-preview"><img src="${dataUrl}" alt="저장된 인증 사진"/><button type="button" class="photo-remove">✕</button></div>`;
+}
+function photoPlaceholderHtml(idHint, label, hint){
+  return `<div class="photo-placeholder"><span class="ic">📷</span><p>${label}</p><span>${hint}</span></div>`;
+}
+/* 오늘인증 폼에 떠있는 "상태 알약"(성공/미인증 등)을 즉시 새로고침 없이 갱신.
+   사진 업로드로 자동저장됐을 때, 알약이 아직 화면에 없으면 새로 만들어 끼워넣는다 */
+function refreshCheckinStatusPill(member, ds){
+  const area = document.getElementById('checkin-form-area');
+  if(!area) return;
+  const c2 = getCheckin(member.id, ds) || {};
+  let pill = area.querySelector('.status-pill');
+  if(!(c2.wakeupTime || c2.held)){
+    if(pill) pill.remove();
+    return;
+  }
+  const st2 = dayStatus(member, ds);
+  const html = st2.label + ((st2.code==='pending' || st2.score===0) ? '' : ' · ' + fmtScore10(st2.score) + '점');
+  if(!pill){
+    pill = document.createElement('div');
+    const note = area.querySelector('.photo-note');
+    if(note) area.insertBefore(pill, note); else area.appendChild(pill);
+  }
+  pill.className = 'status-pill ' + st2.code;
+  pill.innerHTML = html;
+}
+
+function setupPhotoUpload(prefix, timeFieldId, savedKey, member, ds){
+  const box = document.getElementById(prefix+'-photo-box');
+  const input = document.getElementById(prefix+'-photo-input');
+  const label = prefix==='wakeup' ? '기상 인증 사진 업로드' : '모닝루틴 사진 업로드';
+  const hint = prefix==='wakeup' ? '치약 짠 칫솔 + 타임스탬프가 함께 보이는 사진을 첨부하세요' : '루틴과 어울리는 사진을 타임스탬프와 함께 올려주세요';
+  const clearTimeField = ()=>{ const tf=document.getElementById(timeFieldId); if(tf) tf.value=''; };
+  const bindPlaceholder = ()=>{ box.querySelector('.photo-placeholder')?.addEventListener('click', ()=> input.click()); };
+  const showPlaceholder = ()=>{ box.innerHTML = photoPlaceholderHtml(prefix, label, hint); bindPlaceholder(); };
+  /* 사진 프리뷰 공통 바인딩: 탭하면 크게보기, ✕ 누르면 '그 사진에 해당하는 기록만' 삭제
+     (예전엔 모닝루틴 사진을 지워도 기상 기록까지 통째로 사라지는 버그가 있었음) */
+  const bindSaved = (dataUrl)=>{
+    box.querySelector('.photo-preview img')?.addEventListener('click', ()=> openPhotoOverlay(dataUrl));
+    box.querySelector('.photo-remove')?.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      const isWake = prefix==='wakeup';
+      let ok;
+      if(isWake){
+        /* A안: 기상시간을 지우면 그날 전체가 미인증 처리된다는 걸 정확히 경고.
+           실수로 지우는 걸 막기 위해 같은 경고를 두 번 확인받는다 */
+        const warnMsg = '⚠️ 기상 시간을 지우면 오늘 전체가 미인증(다시도전) 처리돼요.\n모닝루틴을 이미 체크했어도, 오늘 하루는 인증 실패로 바뀌어요.\n정말 삭제할까요?';
+        ok = confirm(warnMsg) && confirm(warnMsg);
+      } else {
+        ok = confirm('모닝루틴 인증 사진을 삭제할까요? (기상 인증과 해빗트래커 체크는 유지)');
+      }
+      if(!ok) return;
+      const rec = getCheckin(member.id, ds);
+      if(rec){
+        try{
+          if(isWake && rec.wakeupPhotoKey) await window.storage.delete(rec.wakeupPhotoKey);
+          if(!isWake && rec.activityPhotoKey) await window.storage.delete(rec.activityPhotoKey);
+        }catch(e){}
+        if(isWake){
+          rec.wakeupPhoto = false; rec.wakeupPhotoKey = null; rec.wakeupTime = null;
+        } else {
+          rec.activityPhoto = false; rec.activityPhotoKey = null;
+          /* 사진을 지워도 해빗트래커 체크로 인증된 시각이 있으면 그건 유지 */
+          rec.activityTime = routineCertifiedTime(member, ds, rec.wakeupTime || '') || null;
+        }
+        /* 기상·루틴 모두 비었고 다른 기록도 없으면 그때만 레코드 자체를 정리 */
+        const empty = !rec.wakeupPhoto && !rec.activityPhoto && !rec.wakeupTime && !rec.activityTime
+                      && !rec.held && !(rec.routineChecks||[]).some(x=>x&&x.done);
+        if(empty){ const idx = checkins.findIndex(x=>x.id===rec.id); if(idx>=0) checkins.splice(idx,1); }
+        await saveCheckins();
+      }
+      if(isWake) wakeupPhotoData=null; else activityPhotoData=null;
+      input.value='';
+      toast(isWake ? '기상 인증 사진을 삭제했어요' : '모닝루틴 사진을 삭제했어요');
+      renderAll();
+    });
+  };
+  bindPlaceholder();
+  if(prefix==='wakeup' && wakeupPhotoData) bindSaved(wakeupPhotoData);
+  /* 저장된 사진이 있으면 자동으로 불러와 화면에 바로 보여준다 */
+  const hasNew = prefix==='wakeup' ? !!wakeupPhotoData : !!activityPhotoData;
+  if(savedKey && !hasNew){
+    loadPhoto(savedKey).then(dataUrl=>{
+      if(!dataUrl){ showPlaceholder(); return; }
+      const stillNoNew = prefix==='wakeup' ? !wakeupPhotoData : !activityPhotoData;
+      if(!stillNoNew) return; // 그 사이 새 사진을 첨부했다면 덮어쓰지 않음
+      box.innerHTML = savedPhotoHtml(dataUrl);
+      bindSaved(dataUrl);
+    });
+  }
+  input.addEventListener('change', async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    if(isCertBlockedNow()){ certBlockedToast(); input.value=''; return; }
+    if(prefix==='activity' && !adminMode){
+      const wrec = getCheckin(member.id, ds);
+      const wakeupDone = !!(wrec && wrec.wakeupTime && wrec.wakeupTime!=='보충' && !wrec.held && wrec.wakeupPhoto);
+      if(!wakeupDone){ toast('먼저 기상 인증(STEP 1)을 완료해주세요'); input.value=''; return; }
+    }
+    if(!firebaseReady){ toast('⚠️ 지금은 임시 저장 모드예요 — 이 사진은 새로고침하면 사라져요!'); }
+    const origKB = Math.round(file.size/1024);
+    toast('사진 압축 중...');
+    try{
+      const dataUrl = await compressImage(file);
+      if(prefix==='wakeup') wakeupPhotoData = dataUrl; else activityPhotoData = dataUrl;
+      const tf = timeFieldId ? document.getElementById(timeFieldId) : null;
+      /* 1순위: EXIF 촬영 시각 → 2순위: 파일 시각 */
+      let detected = '', timeSource = '';
+      const exifTime = await readExifTime(file);
+      if(exifTime){ detected = exifTime; timeSource = '촬영정보'; }
+      else {
+        const lm = new Date(file.lastModified);
+        if(lm && !isNaN(lm)){ detected = pad(lm.getHours())+':'+pad(lm.getMinutes()); timeSource = '파일시간'; }
+      }
+      if(tf && detected) tf.value = detected;
+      /* 업로드 즉시 저장소에 영구 저장 → 페이지를 나갔다 와도 당일 사진이 유지됨 */
+      let rec = getCheckin(member.id, ds);
+      if(!rec){ rec = {id:'c_'+Date.now(), memberId:member.id, date:ds, held:false}; checkins.push(rec); }
+      const photoKey = 'gt:photo:'+rec.id+':'+prefix;
+      if(prefix==='wakeup'){
+        rec.wakeupPhotoKey = photoKey; rec.wakeupPhoto = true;
+        /* 기상 인증 사진에 타임스탬프가 감지되면, "인증 저장" 버튼을 누르지 않아도
+           그 시간으로 바로 인증 완료 처리한다 (버튼은 이후 사진 재첨부·수정용으로만 필요) */
+        if(detected){ rec.wakeupTime = detected; rec.held = false; }
+      }
+      else {
+        rec.activityPhotoKey = photoKey; rec.activityPhoto = true;
+        /* 모닝루틴 사진은 '업로드한 시각'을 인증 시각으로 기록.
+           단, 해빗트래커 체크로 이미 인증된 시각이 있으면 체크 기준을 우선 적용 */
+        const uploadedAt = nowHM();
+        rec.activityTime = routineCertifiedTime(member, ds, rec.wakeupTime || '') || uploadedAt;
+      }
+      await savePhoto(photoKey, dataUrl);
+      await saveCheckins();
+      box.innerHTML = savedPhotoHtml(dataUrl);
+      bindSaved(dataUrl);
+      /* 기록·캘린더·대시보드에도 즉시 반영 (체크인 화면은 유지) */
+      renderHistory(); renderCalendar(); renderDashboard(); renderHero();
+      if(prefix==='wakeup') refreshCheckinStatusPill(member, ds);
+      if(prefix==='activity' && window.__refreshRoutineStatus) window.__refreshRoutineStatus(); /* ✅ 인증 완료 표시 즉시 갱신 */
+      const newKB = dataUrlSizeKB(dataUrl);
+      toast(`사진 저장 완료 (${origKB}KB→${newKB}KB)${timeSource? ' · '+timeSource+'로 시간 자동입력·자동저장':''}`);
+      /* 3단계: 백그라운드에서 사진 속 타임스탬프 글자를 OCR로 읽어 보정 — 기상 사진에만 적용
+         (모닝루틴 사진은 '업로드한 시각' 기준이므로 사진 속 시간으로 덮어쓰지 않음) */
+      if(prefix==='wakeup') ocrTimeFromImage(dataUrl).then(async t=>{
+        if(!t) return;
+        const stillSame = wakeupPhotoData === dataUrl;
+        if(!stillSame) return; // 그 사이 다른 사진으로 바뀌었으면 무시
+        if(tf && tf.value !== t){
+          tf.value = t;
+          /* OCR로 보정된 시간도 버튼 없이 바로 자동저장 */
+          const rec2 = getCheckin(member.id, ds);
+          if(rec2){
+            rec2.wakeupTime = t; rec2.held = false;
+            await saveCheckins();
+            renderHistory(); renderCalendar(); renderDashboard(); renderHero();
+            refreshCheckinStatusPill(member, ds);
+          }
+          toast(`📷 사진 속 타임스탬프(${t})를 읽어 시간을 보정했어요 (자동저장됨)`);
+        }
+      });
+    }catch(err){
+      console.error(err);
+      toast('사진을 처리하지 못했어요. 다시 시도해주세요');
+    }
+  });
+}
+
+/* ---- 모닝루틴 해빗트래커 ---- */
+const GOAL_SLOTS = 2;   /* 모닝루틴 목표 칸 수 (2개 고정) */
+function memberGoals(member){
+  if(Array.isArray(member.goals)) return member.goals.slice(0, GOAL_SLOTS).concat(Array(GOAL_SLOTS).fill('')).slice(0, GOAL_SLOTS);
+  return [member.goal||'', ''];
+}
+function nowHM(){ const n=new Date(); return pad(n.getHours())+':'+pad(n.getMinutes()); }
+/* 현재 시각이 기상시간 기준 몇 분 뒤인지 (기상시간 미입력이면 null) */
+function minutesSinceWake(wakeTime){
+  const w = timeToMinutes(wakeTime); if(w==null) return null;
+  const n = new Date();
+  return (n.getHours()*60+n.getMinutes()) - w;
+}
+/* 모닝루틴 인증 창의 시작(하한)과 끝(상한)을 계산.
+   하한은 항상 '실제 기상시간 +30분' (다시 잠들지 않도록 하는 최소 대기시간, 예외 없음)
+   상한은 보통 '실제 기상시간 +60분'이지만, 목표시간보다 일찍 일어난 경우는
+   '목표 기상시간 +60분'까지로 늘어나요 (일찍 일어난 만큼 인증할 시간도 넉넉하게). */
+function routineWindow(wakeTime, targetTime){
+  const w = timeToMinutes(wakeTime); if(w==null) return null;
+  const t = timeToMinutes(targetTime);
+  const isEarly = (t!=null && w < t);
+  const min = w + 30;
+  const max = isEarly ? t + 60 : w + 60;
+  return { ref: w, min, max, isEarly };
+}
+function minutesNow_(){ const n=new Date(); return n.getHours()*60+n.getMinutes(); }
+/* 인증 성공 시각 계산: 작성된 목표 중 1개 이상 체크됐고, 그 마지막 체크가 인증 창(기상 또는 목표시간 기준) 안이면 그 시각 반환 */
+function routineCertifiedTime(member, ds, wakeTime){
+  const rec = getCheckin(member.id, ds);
+  const checks = rec && rec.routineChecks;
+  if(!checks || !wakeTime) return null;
+  const goals = memberGoals(member).map((g,i)=>({g,i})).filter(x=>x.g.trim());
+  if(goals.length===0) return null;
+  const checkedGoals = goals.filter(x=> checks[x.i] && checks[x.i].done);
+  if(checkedGoals.length===0) return null; // 3개 중 1개만 체크해도 인증 완료
+  const times = checkedGoals.map(x=>timeToMinutes(checks[x.i].time)).filter(t=>t!=null);
+  if(times.length===0) return null;
+  const last = Math.max(...times);
+  const win = routineWindow(wakeTime, member.targetTime); if(!win) return null;
+  if(last >= win.min && last <= win.max){
+    return pad(Math.floor(last/60))+':'+pad(last%60);
+  }
+  return null;
+}
+/* ⭐ 목표 달성률: 그날 '작성된 목표' 중 인증 창 안에 체크된 목표의 비율(0~1)
+   - 목표를 하나도 안 적었으면 측정 대상이 없으므로 1(만점) 처리
+   - 체크는 하나도 없지만 모닝루틴 사진으로 인증했으면 1(만점) 처리
+   - 인증 창(기상 후 30~60분, 일찍 일어난 날은 목표시간+60분)을 벗어난 체크는 인정하지 않음 */
+function goalProgress(member, ds, wakeTime){
+  const rec = getCheckin(member.id, ds);
+  const goals = memberGoals(member).map((g,i)=>({g,i})).filter(x=>x.g && x.g.trim());
+  const total = goals.length;
+  if(total===0) return {done:1, total:1, rate:1, measured:false};
+  const checks = (rec && rec.routineChecks) || [];
+  const anyCheck = Array.isArray(checks) && checks.some(x=>x && x.done);
+  if(!anyCheck){
+    /* 체크 기록이 아예 없는 날(사진으로만 인증했거나 이 기능 도입 이전의 과거 기록)은 만점 처리 */
+    if(rec && rec.activityTime) return {done:total, total, rate:1, measured:false};
+    return {done:0, total, rate:0, measured:true};
+  }
+  const win = routineWindow(wakeTime, member.targetTime);
+  let done = 0;
+  if(win){
+    goals.forEach(x=>{
+      const ck = checks[x.i];
+      if(!ck || !ck.done) return;
+      const t = timeToMinutes(ck.time);
+      if(t!=null && t >= win.min && t <= win.max) done++;
+    });
+  }
+  return {done, total, rate: done/total, measured:true};
+}
+
+function setupRoutineTracker(member, ds){
+  const listEl = document.getElementById('routine-list');
+  const statusEl = document.getElementById('routine-status');
+  if(!listEl) return;
+  const goals = memberGoals(member);
+  /* 사진 업로드 등 바깥에서 루틴 인증 상태 표시를 즉시 갱신할 수 있게 훅으로 노출 */
+  window.__refreshRoutineStatus = ()=>{ try{ render(); }catch(e){} };
+
+  function currentWakeTime(){
+    const rec = getCheckin(member.id, ds);
+    return document.getElementById('ci-wakeup-time')?.value || (rec && rec.wakeupTime) || '';
+  }
+  /* 기상 시간을 입력만 한 상태가 아니라, 실제로 '기상 인증'이 저장(사진+PIN)됐는지 확인 */
+  function hasCertifiedWakeup(){
+    const rec = getCheckin(member.id, ds);
+    return !!(rec && rec.wakeupTime && rec.wakeupTime!=='보충' && !rec.held && rec.wakeupPhoto);
+  }
+  function getChecks(){
+    const rec = getCheckin(member.id, ds);
+    return (rec && rec.routineChecks) || [null,null];
+  }
+  function isLocked(){
+    /* 기상인증 전에는 체크 자체를 막음. 인증 창(기상 후 60분)이 지나도 체크는 계속 가능하지만,
+       그 체크는 인증으로 인정되지 않아 누적성공률에는 반영되지 않아요 */
+    return !hasCertifiedWakeup() && !adminMode;
+  }
+  function isTooEarly(){
+    const wt = currentWakeTime();
+    const win = routineWindow(wt, member.targetTime);
+    return win!=null && minutesNow_() < win.min && !adminMode; /* 인증 창이 열리기 전에는 체크 자체를 막음 */
+  }
+  function render(){
+    const checks = getChecks();
+    const locked = isLocked();
+    listEl.innerHTML = goals.map((g,i)=>{
+      const ck = checks[i];
+      const examples = ['물 한잔 마시기','모닝 일기 쓰기'];
+      return `<div class="routine-item ${ck&&ck.done?'done':''}">
+        <input type="checkbox" class="routine-chk" data-idx="${i}" ${ck&&ck.done?'checked':''} ${(locked||isTooEarly())?'disabled':''}/>
+        <input type="text" class="routine-goal" data-idx="${i}" value="${(g||'').replace(/"/g,'&quot;')}" placeholder="예: ${examples[i]}"/>
+        ${ck&&ck.done&&ck.time? `<span class="routine-time">✓ ${ck.time}</span>` : ''}
+      </div>`;
+    }).join('');
+    const wt = currentWakeTime();
+    const rec0 = getCheckin(member.id, ds);
+    const photoCert = (rec0 && rec0.activityPhoto && rec0.activityTime) ? rec0.activityTime : null;
+    const certified = routineCertifiedTime(member, ds, wt) || photoCert;
+    const gp = goalProgress(member, ds, wt);
+    let statusHtml = '';
+    if(gp.measured && wt){
+      const pct = Math.round(gp.rate*100);
+      statusHtml += `<span class="rt-rate">🎯 목표 달성률 <b>${gp.done}/${gp.total} (${pct}%)</b>${gp.rate>=1?' — 만점이에요!':` · 지금 저장되면 ${fmtScore10(-Math.round(50*(1-gp.rate)))}점`}</span>`;
+    }
+    if(!hasCertifiedWakeup() && !adminMode) statusHtml = `<span class="rt-locked">🔒 먼저 기상 인증(STEP 1)을 완료해야 모닝루틴을 체크할 수 있어요</span>`;
+    if(certified) statusHtml += `<span class="rt-ok">✅ 모닝루틴 인증 완료 · ${certified}</span>`;
+    else if(wt){
+      const win = routineWindow(wt, member.targetTime);
+      const now = minutesNow_();
+      if(win && now < win.min){
+        statusHtml += `<span class="rt-wait">⏱ 인증 창은 기상 후 30분부터 열려요 (지금 ${Math.max(0,now-win.ref)}분 지남)</span>`;
+      } else if(win && now <= win.max){
+        statusHtml += `<span class="rt-wait">🟢 지금 인증 창이에요 — 마지막 체크를 완료하세요!</span>`;
+      } else {
+        statusHtml += `<span class="rt-wait">⌛ 기상 후 60분이 지났어요 — 지금 체크해도 누적성공률엔 반영되지 않아요</span>`;
+      }
+    } else {
+      statusHtml += `<span class="rt-wait">먼저 기상 시간을 입력하면 인증 창이 계산돼요</span>`;
+    }
+    statusEl.innerHTML = statusHtml;
+    bind();
+  }
+  function bind(){
+    listEl.querySelectorAll('.routine-chk').forEach(chk=>{
+      chk.addEventListener('change', async ()=>{
+        if(!hasCertifiedWakeup() && !adminMode){ toast('먼저 기상 인증(STEP 1)을 완료해주세요'); chk.checked=false; render(); return; }
+        if(chk.checked && isTooEarly()){ toast('기상 후 30분이 지나야 체크할 수 있어요 (다시 잠들지 않도록)'); chk.checked=false; render(); return; }
+        if(chk.checked && isCertBlockedNow()){ certBlockedToast(); chk.checked=false; return; }
+        if(chk.checked){
+          const wt0 = currentWakeTime();
+          const win0 = routineWindow(wt0, member.targetTime);
+          if(win0 && minutesNow_() > win0.max) toast('⌛ 기상 후 60분이 지나 체크했어요 — 이번 체크는 누적성공률에 반영되지 않아요');
+        }
+        const i = Number(chk.dataset.idx);
+        let rec = getCheckin(member.id, ds);
+        if(!rec){ rec = {id:'c_'+Date.now(), memberId:member.id, date:ds, held:false}; checkins.push(rec); }
+        if(!Array.isArray(rec.routineChecks)) rec.routineChecks = [null,null];
+        rec.routineChecks[i] = chk.checked ? {done:true, time:nowHM()} : null;
+        /* 체크 상태가 바뀔 때마다 인증 여부 재계산해서 즉시 반영.
+           단, 체크로 인증이 안 되더라도 사진으로 인증한 시각이 있으면 그건 지우지 않고 보존 */
+        const photoTime = (rec.activityPhoto && rec.activityTime) ? rec.activityTime : null;
+        rec.activityTime = routineCertifiedTime(member, ds, currentWakeTime()) || photoTime;
+        await saveCheckins();
+        render();
+        /* 상태 알약(성공/대기 표시)·캘린더·대시보드에도 즉시 반영 */
+        renderCalendar(); renderDashboard(); renderHero(); renderHistory();
+        const pill = document.querySelector('#checkin-form-area .status-pill');
+        if(pill){
+          const st2 = dayStatus(member, ds);
+          pill.className = 'status-pill ' + st2.code;
+          pill.innerHTML = st2.label + ((st2.code==='pending' || st2.score===0) ? '' : ' · ' + fmtScore10(st2.score) + '점');
+        }
+      });
+    });
+    listEl.querySelectorAll('.routine-goal').forEach(inp=>{
+      inp.addEventListener('change', async ()=>{
+        const i = Number(inp.dataset.idx);
+        if(!Array.isArray(member.goals) || member.goals.length!==GOAL_SLOTS) member.goals = memberGoals(member);
+        member.goals[i] = inp.value.trim();
+        goals[i] = member.goals[i];
+        await saveMembers();
+        toast('모닝루틴 목표를 저장했어요');
+        render();
+      });
+    });
+  }
+  render();
+  /* 기상시간이 바뀌면 인증 창 상태도 다시 계산 */
+  document.getElementById('ci-wakeup-time')?.addEventListener('change', render);
+}
+
+/* ---- 사진에서 시간 자동 인식 ---- */
+/* 1) EXIF 촬영 시각 읽기: 카메라로 찍은 JPEG 안에 기록된 '찍은 시각'을 꺼낸다 */
+function readExifTime(file){
+  return new Promise(resolve=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const buf = reader.result;
+        const view = new DataView(buf);
+        if(view.byteLength < 4 || view.getUint16(0) !== 0xFFD8){ resolve(null); return; } // JPEG가 아니면 스킵
+        let offset = 2;
+        while(offset < view.byteLength - 4){
+          const marker = view.getUint16(offset);
+          if((marker & 0xFF00) !== 0xFF00) break;
+          const size = view.getUint16(offset+2);
+          if(marker === 0xFFE1){ // APP1(EXIF) 구간에서 'YYYY:MM:DD HH:MM:SS' 패턴 탐색
+            const bytes = new Uint8Array(buf, offset+4, Math.min(size, view.byteLength-offset-4));
+            const str = new TextDecoder('latin1').decode(bytes);
+            const m = str.match(/\d{4}:\d{2}:\d{2} ([01]\d|2[0-3]):([0-5]\d):\d{2}/);
+            if(m){ resolve(m[1]+':'+m[2]); return; }
+          }
+          offset += 2 + size;
+        }
+      }catch(e){}
+      resolve(null);
+    };
+    reader.onerror = ()=> resolve(null);
+    reader.readAsArrayBuffer(file.slice(0, 131072)); // EXIF는 파일 앞부분에 있으므로 128KB만 읽음
+  });
+}
+/* 2) OCR: 사진 위에 찍힌 타임스탬프 글자(예: 06:15)를 직접 읽는다. 필요할 때만 라이브러리 로드 */
+let tessLoadPromise = null;
+function loadTesseract(){
+  if(window.Tesseract) return Promise.resolve();
+  if(tessLoadPromise) return tessLoadPromise;
+  tessLoadPromise = new Promise((res, rej)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = res; s.onerror = ()=>{ tessLoadPromise=null; rej(new Error('OCR 라이브러리 로드 실패')); };
+    document.head.appendChild(s);
+  });
+  return tessLoadPromise;
+}
+async function ocrTimeFromImage(dataUrl){
+  try{
+    await loadTesseract();
+    const result = await Promise.race([
+      Tesseract.recognize(dataUrl, 'eng'),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('OCR 시간 초과')), 25000))
+    ]);
+    const text = (result && result.data && result.data.text) || '';
+    const ampm = /(오전|오후|AM|PM|am|pm)/.exec(text);
+    const m = /([01]?\d|2[0-3])\s*[:;]\s*([0-5]\d)/.exec(text);
+    if(!m) return null;
+    let h = parseInt(m[1],10); const mm = m[2];
+    if(ampm){
+      const a = ampm[1].toLowerCase();
+      if((a==='오후'||a==='pm') && h<12) h+=12;
+      if((a==='오전'||a==='am') && h===12) h=0;
+    }
+    return String(h).padStart(2,'0')+':'+mm;
+  }catch(e){ console.warn('OCR 실패:', e.message); return null; }
+}
+
+/* ===================== Render: Calendar ===================== */
+function renderCalendar(){
+  const el = document.getElementById('sec-calendar');
+  const year = calViewDate.getFullYear(), monthIdx = calViewDate.getMonth();
+  const weeks = getWeeksOfMonth(year, monthIdx);
+
+  /* 이름칩은 없애고, "전체" + 길게 늘인 "더보기" 버튼만 둔다.
+     전체 멤버는 "더보기"를 눌러야 나오는 목록(드롭다운)에서 이름으로 골라 확인한다 */
+  const sortedByRate = [...members].sort((a,b)=> memberCumulativeRate(b.id,{year,monthIdx})-memberCumulativeRate(a.id,{year,monthIdx}));
+  const chipsHtml = `<div class="cal-chip ${calFilterId===''?'active':''}" data-id="">전체</div>` +
+    (members.length ? `<button type="button" class="cal-chip-more" id="cal-chip-more-btn">멤버별 인증기록 보기 <span class="cal-chip-more-arrow">${calDropdownOpen?'▴':'▾'}</span></button>` : '');
+  const dropdownHtml = calDropdownOpen ? `
+    <div class="cal-member-dropdown" id="cal-member-dropdown">
+      <div class="cal-dropdown-label">전체 멤버 (누적성공률 순)</div>
+      ${sortedByRate.map(m=>`<div class="cal-dropdown-row ${calFilterId===m.id?'active':''}" data-id="${m.id}"><span>${m.name}</span><span class="cal-dropdown-pct">${memberCumulativeRate(m.id,{year,monthIdx})}%</span></div>`).join('')}
+    </div>` : '';
+
+  let gridHtml = `<div class="cal-wd-row"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div><div class="cal-grid">`;
+  weeks.forEach((w,wi)=>{
+    for(let i=0;i<7;i++){
+      const d = addDays(w.start,i);
+      const ds = fmtDate(d);
+      const otherMonth = d.getMonth()!==monthIdx;
+      let cls='cal-cell'+(otherMonth?' other-month':'')+(isWeekend(d)?' weekend':'');
+      let mark='';
+      if(calFilterId){
+        const m = members.find(x=>x.id===calFilterId);
+        const st = dayStatus(m, ds);
+        if(!isFuture(d)){
+          cls += ' '+st.code;
+          mark = st.leaf ? `<span class="leaf">${st.leaf}</span>` : '';
+        }
+      } else {
+        const ratio = members.length? members.filter(m=>hasCheckin(m.id,ds)).length/members.length : 0;
+        if(!isFuture(d)){
+          if(ratio===1){ cls+=' perfect'; mark='<span class="leaf">😆</span>'; }
+          else if(ratio>0){ cls+=' partial'; mark='<span class="leaf">-</span>'; }
+        }
+      }
+      if(sameDate(d,todayDate)) cls+=' today';
+      if(ds===calDetailDate) cls+=' selected';
+      gridHtml += `<div class="${cls}" data-date="${ds}">${d.getDate()}${mark}</div>`;
+    }
+  });
+  gridHtml += `</div>`;
+
+  /* 개인별 누적 성공률 + 목표 누적성공률 — 지금 보고 있는 '달' 기준으로 계산 */
+  const calMonth = {year, monthIdx};
+  const cumRows = members.map(m=>{
+    const has = hasMissionDaysInMonth(m, calMonth);
+    const pct  = has ? memberCumulativeRate(m.id, calMonth) : null;
+    const gpct = has ? memberGoalRate(m.id, calMonth) : null;
+    return `<div class="rank-row">
+      <div class="avatar" style="background:${m.color}">${m.name[0]}</div>
+      <div class="rank-info">
+        <div class="rank-name">${m.name}</div>
+        <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${pct===null?0:Math.min(pct,100)}%"></div></div>
+        <div class="rank-goal"><span>🎯 목표성공률</span><div class="rank-bar-track goal"><div class="rank-bar-fill goal" style="width:${gpct===null?0:Math.min(gpct,100)}%"></div></div><b>${gpct===null?'–':gpct+'%'}</b></div>
+      </div>
+      <div class="rank-pct">${pct===null?'–':pct+'%'}</div>
+    </div>`;
+  }).join('') || `<div class="empty-state"><span class="ic">🌙</span>팀원을 먼저 등록해주세요</div>`;
+
+  let detailHtml = '';
+  if(calFilterId){
+    /* 개인 선택 시: 목표설정일(미션 시작일)부터 오늘까지 인증 내역을 최신순으로 스크롤 표시 */
+    const fm = members.find(x=>x.id===calFilterId);
+    if(fm){
+      const dayLbls=['일','월','화','수','목','금','토'];
+      /* 늦게 합류한 팀원은 등록일부터, 그 외에는 관리자가 정한 미션 시작일부터만 표시 */
+      const startD = (fm.registeredAt && parseDate(fm.registeredAt) > periodStartDate()) ? parseDate(fm.registeredAt) : periodStartDate();
+      const totalDays = Math.max(0, Math.round((todayDate - startD)/86400000)) + 1;
+      let items='';
+      for(let i=0;i<totalDays;i++){
+        const d = addDays(todayDate, -i);
+        const ds2 = fmtDate(d);
+        if(isOutsideMission(fm, ds2)) continue; /* 시작일 이전·등록 전·제외기간은 내역에서 제외 */
+        const c = getCheckin(fm.id, ds2);
+        if(isWeekend(d) && !c) continue; /* 인증 없는 주말은 생략 */
+        const st = dayStatus(fm, ds2);
+        const lbl = st.label; /* dayStatus가 상황별로 정확한 라벨을 이미 반환하므로 그대로 사용
+          (예전엔 code==='pending'이면 무조건 '⏳ 주말대체인증'으로 덮어써서,
+           모닝루틴 인증 대기 상태까지 주말대체인증으로 잘못 표시되는 버그가 있었음) */
+        const wTime = c && c.wakeupTime && c.wakeupTime!=='보충' ? c.wakeupTime : '';
+        const photoBtns = [
+          c && c.wakeupPhotoKey ? `<button type="button" class="view-photo-btn" onclick="openPhotoViewer('${c.wakeupPhotoKey}')">📷기상</button>` : '',
+          c && c.activityPhotoKey ? `<button type="button" class="view-photo-btn" onclick="openPhotoViewer('${c.activityPhotoKey}')">📷루틴</button>` : ''
+        ].filter(Boolean).join(' ');
+        items += `<div class="cal-detail-row">
+          <div style="flex:1">
+            <div style="font-size:17.5px;font-weight:700">${ds2.slice(5)} (${dayLbls[d.getDay()]}) <span style="font-weight:600;font-size:15.5px;color:var(--ink-sub);">${lbl}</span></div>
+            <div style="font-size:15.8px;color:var(--ink-sub);margin-top:3px;">${wTime? '기상 '+wTime:''}${c&&c.activityTime? ' · 루틴 '+c.activityTime:''}${photoBtns? ' · '+photoBtns:''}</div>
+          </div>
+        </div>`;
+      }
+      detailHtml = `<div class="cal-detail"><div class="section-title" style="margin:0 0 8px;font-size:20.2px;">${fm.name}님 인증 내역 (목표설정일부터 · 최신순)</div><div class="cal-history">${items || '<div class="empty-state"><span class="ic">🌙</span>아직 기록이 없어요</div>'}</div></div>`;
+    }
+  } else if(calDetailDate){
+    if(calDetailDate < settings.periodStart || calDetailDate > settings.periodEnd){
+      detailHtml = `<div class="cal-detail"><div class="empty-state"><span class="ic">🌙</span>미션 기간(${settings.periodStart.slice(5)}~${settings.periodEnd.slice(5)}) 밖의 날짜예요</div></div>`;
+    } else {
+    const isToday = (calDetailDate === todayStr());
+    const rows = members.map(m=>{
+      const c = getCheckin(m.id, calDetailDate);
+      const st0 = dayStatus(m, calDetailDate);
+      const isHeld = st0.code==='pending';
+      const isOutside = isOutsideMission(m, calDetailDate); /* 늦은 합류 이전이거나 개인 인증제외기간인 날 */
+      const wOk = !!(c && (c.wakeupPhotoKey || c.wakeupPhoto));
+      const aOk = !!(c && c.activityTime); /* 해빗트래커 인증 완료 여부 */
+      const wTime = c && c.wakeupTime && c.wakeupTime!=='보충' ? c.wakeupTime : '';
+      const aTime = c && c.activityTime ? c.activityTime : '';
+      const makeBtn = (ok, key, time, section)=>{
+        if(ok){
+          const timeTag = time ? ` · ${time}` : '';
+          return key
+            ? `<button type="button" class="view-photo-btn" onclick="openPhotoViewer('${key}')">📷 확인${timeTag}</button>`
+            : `<span class="verified-tag">✅ 확인${timeTag}</span>`;
+        }
+        if(isOutside) return `<span class="unverified-tag">해당없음</span>`; /* 미인증이 아니라 애초에 대상이 아닌 날 */
+        if(isHeld) return `<span class="unverified-tag" style="background:#FBF1D9;border-color:#D9B75A;color:#7A5A12;">⏳ 주말대체인증</span>`;
+        return isToday
+          ? `<button type="button" class="unverified-btn" onclick="goToSection('${m.id}','${section}')">미인증</button>`
+          : `<span class="unverified-tag">미인증</span>`;
+      };
+      const wBtn = makeBtn(wOk, c&&c.wakeupPhotoKey, wTime, 'wakeup');
+      const aBtn = makeBtn(aOk, null, aTime, 'activity');
+      return `<div class="cal-detail-row">
+        <div class="avatar av-sm" style="background:${m.color}">${m.name[0]}</div>
+        <div style="flex:1">
+          <div style="font-size:18.8px;font-weight:700">${m.name}</div>
+          <div style="font-size:16.5px;color:var(--ink-sub);margin-top:4px;display:flex;flex-wrap:wrap;gap:4px 10px;">
+            <span>기상인증 ${wBtn}</span><span>모닝루틴 ${aBtn}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    detailHtml = `<div class="cal-detail"><div class="section-title" style="margin:0 0 8px;font-size:20.2px;">${calDetailDate} 상세</div>${rows}</div>`;
+    }
+  }
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:6px;">덱스모닝멤버</div>
+    <div class="cal-chip-row" id="cal-chip-row">${chipsHtml}</div>
+    ${dropdownHtml}
+    <div class="cal-nav">
+      <button id="cal-prev">‹</button>
+      <div class="cal-nav-title">${year}년 ${monthIdx+1}월</div>
+      <button id="cal-next">›</button>
+    </div>
+    ${calFilterId ? (()=>{
+      /* 개인 선택 시: 그 멤버의 이번 달 누적성공률·목표성공률을 달력 위로 끌어올려 표시 */
+      const fm = members.find(x=>x.id===calFilterId);
+      if(!fm) return '';
+      const hasM = hasMissionDaysInMonth(fm, {year, monthIdx});
+      const pct  = hasM ? memberCumulativeRate(fm.id, {year, monthIdx}) : null;
+      const gpct = hasM ? memberGoalRate(fm.id, {year, monthIdx}) : null;
+      return `<div class="rank-card" style="margin-top:10px;"><div class="rank-row">
+        <div class="avatar" style="background:${fm.color}">${fm.name[0]}</div>
+        <div class="rank-info">
+          <div class="rank-name">${fm.name} · ${monthIdx+1}월 누적 성공률</div>
+          <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${pct===null?0:Math.min(pct,100)}%"></div></div>
+          <div class="rank-goal"><span>🎯 목표성공률</span><div class="rank-bar-track goal"><div class="rank-bar-fill goal" style="width:${gpct===null?0:Math.min(gpct,100)}%"></div></div><b>${gpct===null?'–':gpct+'%'}</b></div>
+        </div>
+        <div class="rank-pct">${pct===null?'–':pct+'%'}</div>
+      </div></div>`;
+    })() : ''}
+    <div class="cal-card-wrap" id="cal-swipe-zone">
+      <span class="cal-swipe-arrow left">‹</span>
+      <div class="cal-card">${gridHtml}</div>
+      <span class="cal-swipe-arrow right">›</span>
+    </div>
+    ${detailHtml}
+    ${!calFilterId ? `
+    <div class="section-title" style="margin-top:20px;">누적 성공률 <span class="tag">${monthIdx+1}월 · 개인별</span></div>
+    <div class="rank-card">${cumRows}</div>` : ''}
+
+    <div class="section-title" style="margin-top:20px;">캘린더 인증안내</div>
+    <div class="legend-card">
+      <div class="legend-row"><div class="legend-dot" style="background:linear-gradient(135deg,#4A1D73,#7B4BB5)"></div>😆 덱스모닝 성공</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#C6A9E8"></div>🙂 기상성공 · 목표 일부 달성</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#C08A2E"></div>🎯 목표인증 (기상 실패)</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#B8912E"></div>⏰ 기상성공 (목표 미인증)</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#E9E2F4"></div>미인증 (기상·목표 모두 실패)</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#FBF1D9;border:1px dashed #D9B75A"></div>⏳ 주말대체인증보류</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#EDE3FA"></div>✅ 미리 체크한 대체인증</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#C9A24E"></div>🔁 뒤늦게 채운 대체인증(주말)</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#fff;border:1px solid #D9D0EA"></div>🔥 오늘결석</div>
+    </div>
+  `;
+
+  document.querySelectorAll('#cal-chip-row .cal-chip').forEach(c=>{
+    c.addEventListener('click', ()=>{ calFilterId=c.dataset.id; calDetailDate=todayStr(); calDropdownOpen=false; renderCalendar(); });
+  });
+  document.getElementById('cal-chip-more-btn')?.addEventListener('click', ()=>{ calDropdownOpen=!calDropdownOpen; renderCalendar(); });
+  document.querySelectorAll('#cal-member-dropdown .cal-dropdown-row').forEach(r=>{
+    r.addEventListener('click', ()=>{ calFilterId=r.dataset.id; calDetailDate=todayStr(); calDropdownOpen=false; renderCalendar(); });
+  });
+  document.getElementById('cal-prev').addEventListener('click', ()=>{ calViewDate=new Date(year,monthIdx-1,1); calDetailDate=null; renderCalendar(); });
+  document.getElementById('cal-next').addEventListener('click', ()=>{ calViewDate=new Date(year,monthIdx+1,1); calDetailDate=null; renderCalendar(); });
+  const calSwipeZone = document.getElementById('cal-swipe-zone');
+  let calTouchX=null, calTouchY=null;
+  calSwipeZone.addEventListener('touchstart', e=>{
+    calTouchX = e.touches[0].clientX; calTouchY = e.touches[0].clientY;
+  }, {passive:true});
+  calSwipeZone.addEventListener('touchend', e=>{
+    if(calTouchX===null) return;
+    const dx = e.changedTouches[0].clientX - calTouchX;
+    const dy = e.changedTouches[0].clientY - calTouchY;
+    calTouchX = null; calTouchY = null;
+    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+      if(dx < 0){ calViewDate=new Date(year,monthIdx+1,1); } else { calViewDate=new Date(year,monthIdx-1,1); }
+      calDetailDate=null; renderCalendar();
+    }
+  }, {passive:true});
+  document.querySelectorAll('.cal-cell[data-date]').forEach(c=>{
+    c.addEventListener('click', ()=>{ calDetailDate = (calDetailDate===c.dataset.date) ? null : c.dataset.date; renderCalendar(); });
+  });
+}
+
+/* ===================== Render: Members ===================== */
+function renderMembers(){
+  const el = document.getElementById('sec-members');
+  let listHtml = members.map(m=>{
+    const joinTag = m.registeredAt ? `<div class="mgoal">🗓 등록일 ${m.registeredAt.slice(5)}</div>` : '';
+    const exemptTag = (m.exemptStart && m.exemptEnd) ? `<div class="mgoal">🏝 인증제외 ${m.exemptStart.slice(5)}~${m.exemptEnd.slice(5)}</div>` : '';
+    return `
+    <div class="member-card">
+      <div class="avatar av-lg" style="background:${m.color}">${m.name[0]}</div>
+      <div><div class="mname">${m.name}</div>${joinTag}${exemptTag}</div>
+      <div class="mtime">${m.targetTime}</div>
+      ${adminMode? `<div class="mactions">
+        <button class="icon-btn" data-edit="${m.id}">✎</button>
+        <button class="icon-btn" data-del="${m.id}">🗑</button>
+      </div>`:''}
+    </div>`;
+  }).join('') || `<div class="empty-state"><span class="ic">🙍</span>팀원을 추가해주세요</div>`;
+
+  let formHtml = '';
+  if(adminMode && (addingMember || editingMemberId)){
+    const m = editingMemberId ? members.find(x=>x.id===editingMemberId) : {name:'',targetTime:'06:00',pin:'',color:COLORS[0],exemptStart:'',exemptEnd:'',registeredAt:todayStr()};
+    formHtml = `
+      <div class="form-card">
+        <div class="form-row"><label>이름</label><input id="f-name" value="${m.name}" placeholder="팀원 이름"/></div>
+        <div class="form-row"><label>목표 기상 시간</label><input id="f-time" type="time" value="${m.targetTime}"/></div>
+        <div class="form-row"><label>PIN</label><input id="f-pin" value="${m.pin}" placeholder="숫자 또는 문자 조합"/></div>
+        <div class="form-row"><label>색상</label><div class="color-row" id="f-colors">${COLORS.map(c=>`<div class="color-dot ${c===m.color?'sel':''}" style="background:${c}" data-c="${c}"></div>`).join('')}</div></div>
+        <div class="section-title" style="margin:12px 0 6px;font-size:17px;">🗓 팀원등록일</div>
+        <p style="font-size:15px;color:var(--ink-faint);margin:-2px 0 8px;">이 날짜부터 누적 성공률에 반영돼요. 늦게 합류한 팀원은 처음부터 있었던 것처럼 불리해지지 않도록, 이 날짜 이전은 계산에서 빠져요.</p>
+        <div class="form-row"><label>등록일</label><input id="f-registered" type="date" value="${m.registeredAt||todayStr()}"/></div>
+        <div class="section-title" style="margin:12px 0 6px;font-size:17px;">🏝 인증제외기간 (선택)</div>
+        <p style="font-size:15px;color:var(--ink-faint);margin:-2px 0 8px;">이 기간에는 팀원 등록은 유지되지만, 인증하지 않아도 누적 성공률 계산에서 제외돼요 (휴가·병가 등)</p>
+        <div class="form-row"><label>제외 시작일</label><input id="f-exempt-start" type="date" value="${m.exemptStart||''}"/></div>
+        <div class="form-row"><label>제외 종료일</label><input id="f-exempt-end" type="date" value="${m.exemptEnd||''}"/></div>
+        <div class="form-actions">
+          <button class="btn btn-mini ghost" id="f-cancel" style="flex:1">취소</button>
+          <button class="btn btn-mini" id="f-save" style="flex:1">${editingMemberId?'저장':'추가하기'}</button>
+        </div>
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:6px; justify-content:space-between;">
+      <span>팀원 ${members.length}명</span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        ${adminMode? `<button class="btn btn-mini" id="btn-add-member">+ 추가</button>` : ''}
+        <button class="gear-btn" id="btn-admin-toggle" style="width:38px;height:38px;">⚙</button>
+      </span>
+    </div>
+    ${!adminMode? `<div class="admin-banner"><span class="ic">🔒</span><strong>이 페이지는 관리자만 수정할 수 있어요</strong><p style="margin-top:4px;">위의 ⚙ 버튼으로 관리자 모드를 켜주세요</p></div>` : ''}
+    ${listHtml}
+    ${formHtml}
+  `;
+  bindAdminToggle();
+
+  if(adminMode){
+    document.getElementById('btn-add-member')?.addEventListener('click', ()=>{ addingMember=true; editingMemberId=null; renderMembers(); });
+    document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>{ editingMemberId=b.dataset.edit; addingMember=false; renderMembers(); }));
+    document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+      members = members.filter(m=>m.id!==b.dataset.del);
+      await saveMembers(); toast('팀원을 삭제했어요'); renderAll();
+    }));
+    const colorRow = document.getElementById('f-colors');
+    if(colorRow){ colorRow.addEventListener('click', (e)=>{ if(e.target.classList.contains('color-dot')){ colorRow.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('sel')); e.target.classList.add('sel'); } }); }
+    document.getElementById('f-cancel')?.addEventListener('click', ()=>{ addingMember=false; editingMemberId=null; renderMembers(); });
+    document.getElementById('f-save')?.addEventListener('click', async ()=>{
+      const name=document.getElementById('f-name').value.trim();
+      const time=document.getElementById('f-time').value;
+      const pin=document.getElementById('f-pin').value.trim();
+      const color=document.querySelector('#f-colors .color-dot.sel')?.dataset.c || COLORS[0];
+      const registeredAt=document.getElementById('f-registered').value || todayStr();
+      const exemptStart=document.getElementById('f-exempt-start').value || '';
+      const exemptEnd=document.getElementById('f-exempt-end').value || '';
+      if(!name||!time||pin.length!==4){ toast('이름·기상시간·PIN(4자리)을 입력해주세요'); return; }
+      if(exemptStart && exemptEnd && parseDate(exemptStart) > parseDate(exemptEnd)){ toast('인증제외 시작일이 종료일보다 늦을 수 없어요'); return; }
+      if(editingMemberId){
+        const m = members.find(x=>x.id===editingMemberId);
+        Object.assign(m,{name,targetTime:time,pin,color,exemptStart,exemptEnd,registeredAt});
+      } else {
+        members.push({id:'m_'+Date.now(), name,targetTime:time,pin,color,exemptStart,exemptEnd,registeredAt});
+      }
+      await saveMembers();
+      addingMember=false; editingMemberId=null;
+      toast('저장됐어요 🌱'); renderAll();
+    });
+  }
+}
+function memberEmoji(goal){
+  if(/독서|책/.test(goal)) return '📚';
+  if(/러닝|운동|헬스|요가|스트레칭/.test(goal)) return '🏃';
+  if(/명상/.test(goal)) return '🧘';
+  if(/영어|공부|어학/.test(goal)) return '🗣';
+  return '🌱';
+}
+
+/* ===================== Render: History ===================== */
+function renderHistory(){
+  const el = document.getElementById('sec-history');
+  let list = [...checkins].filter(c=>c.wakeupTime).sort((a,b)=>b.date.localeCompare(a.date));
+  if(histFilterMember) list = list.filter(c=>c.memberId===histFilterMember);
+  if(histFilterMonth) list = list.filter(c=>c.date.startsWith(histFilterMonth));
+
+  const memberOpts = members.map(m=>`<option value="${m.id}" ${histFilterMember===m.id?'selected':''}>${m.name}</option>`).join('');
+
+  const rows = list.map(c=>{
+    const m = members.find(x=>x.id===c.memberId);
+    if(!m) return '';
+    const st = dayStatus(m, c.date);
+    const badgeStyle = {perfect:'background:var(--green-dim);color:var(--green)', goalpart:'background:#EFE6FB;color:#5A2C8C', wakeup:'background:var(--gold-dim);color:#6B5210', late:'background:#F7EAD2;color:#7A5A12', latewake:'background:#F0ECF8;color:var(--ink-sub)', absent:'background:#EDE7F6;color:var(--ink-faint)'}[st.code];
+    const histLabel = st.label.replace('부분인증','모닝루틴'); /* 기록 탭 표시 전용 문구 */
+    const wakeupPhotoBtn = c.wakeupPhotoKey ? `<button type="button" class="view-photo-btn" onclick="openPhotoViewer('${c.wakeupPhotoKey}')">📷기상</button> ` : (c.wakeupPhoto ? '📷 ' : '');
+    const activityPhotoBtn = c.activityPhotoKey ? `<button type="button" class="view-photo-btn" onclick="openPhotoViewer('${c.activityPhotoKey}')">📷루틴</button> ` : (c.activityPhoto ? '📷 ' : '');
+    /* 루틴 시각: 인증 확정 시각이 있으면 그걸, 없으면 해빗트래커 마지막 체크 시각 표시 */
+    let routineTime = c.activityTime || '';
+    if(!routineTime && Array.isArray(c.routineChecks)){
+      const times = c.routineChecks.filter(x=>x&&x.time).map(x=>timeToMinutes(x.time)).filter(t=>t!=null);
+      if(times.length){ const last=Math.max(...times); routineTime = pad(Math.floor(last/60))+':'+pad(last%60); }
+    }
+    return `<div class="hist-row">
+      <div class="avatar av-sm2" style="background:${m.color}">${m.name[0]}</div>
+      <div style="flex:1">
+        <div class="hist-top"><span class="hist-name">${m.name}</span><span class="hist-date">${c.date.slice(5)}</span></div>
+        <span class="hist-badge" style="${badgeStyle}">${histLabel}</span>
+        <div class="hist-memo">${wakeupPhotoBtn}기상 ${c.wakeupTime}${routineTime? ' · 루틴 '+activityPhotoBtn+routineTime:''}${c.memo? ' — '+c.memo:''}</div>
+      </div>
+      ${adminMode? `<button class="icon-btn hist-edit" data-edit-rec="${c.id}">✎</button><button class="icon-btn hist-del" data-del="${c.id}">🗑</button>`:''}
+    </div>
+    ${(adminMode && editingRecordId===c.id) ? renderAdminEditCard(c, m) : ''}`;
+  }).join('') || `<div class="empty-state"><span class="ic">🔍</span>기록이 없습니다</div>`;
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:6px; justify-content:space-between;">
+      <span>인증 기록</span>
+      <span style="font-size:16.5px; color:${adminMode?'var(--green)':'var(--ink-faint)'}; font-weight:700;">${adminMode?'🔓 관리자 모드':'🔒 보기 전용'}</span>
+    </div>
+    <div class="filter-row">
+      <select id="hist-member"><option value="">전체 팀원</option>${memberOpts}</select>
+      <input type="month" id="hist-month" value="${histFilterMonth}"/>
+    </div>
+    <div id="hist-list">${rows}</div>
+  `;
+  document.getElementById('hist-member').addEventListener('change', (e)=>{ histFilterMember=e.target.value; renderHistory(); });
+  document.getElementById('hist-month').addEventListener('change', (e)=>{ histFilterMonth=e.target.value; renderHistory(); });
+  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    const target = checkins.find(c=>c.id===b.dataset.del);
+    try{
+      if(target){
+        if(target.wakeupPhotoKey) await window.storage.delete(target.wakeupPhotoKey);
+        if(target.activityPhotoKey) await window.storage.delete(target.activityPhotoKey);
+      }
+    }catch(e){}
+    checkins = checkins.filter(c=>c.id!==b.dataset.del);
+    await saveCheckins(); toast('기록과 사진을 삭제했어요'); renderAll();
+  }));
+  document.querySelectorAll('[data-edit-rec]').forEach(b=>b.addEventListener('click', ()=>{
+    editingRecordId = (editingRecordId===b.dataset.editRec) ? null : b.dataset.editRec;
+    aeWakePhotoNew = null; aeActPhotoNew = null;
+    renderHistory();
+  }));
+  if(adminMode && editingRecordId) bindAdminEditCard();
+}
+
+/* ---- 관리자: 과거 날짜의 사진·모닝루틴 체크 수정 ---- */
+function renderAdminEditCard(c, member){
+  const goals = memberGoals(member);
+  const checks = Array.isArray(c.routineChecks) ? c.routineChecks : [null,null];
+  const routineRows = goals.map((g,i)=>{
+    const ck = checks[i];
+    return `<div class="routine-item ${ck&&ck.done?'done':''}">
+      <input type="checkbox" class="ae-routine-chk" data-idx="${i}" ${ck&&ck.done?'checked':''}/>
+      <span class="routine-goal" style="flex:1;">${g||'(미설정)'}</span>
+      <input type="time" class="ae-routine-time" data-idx="${i}" value="${ck&&ck.time?ck.time:''}" style="width:112px;border:1.5px solid var(--line);border-radius:8px;padding:4px 6px;font-family:inherit;"/>
+    </div>`;
+  }).join('');
+  return `<div class="cert-card" style="margin:8px 0 14px;border:1.5px solid var(--ink);">
+    <div class="cert-head"><span class="step-badge" style="background:var(--ink)">✎ 관리자 수정</span><h4>${member.name} · ${c.date}</h4></div>
+    <div class="time-field"><label>기상시간</label><input type="time" id="ae-wake-time" value="${c.wakeupTime&&c.wakeupTime!=='보충'?c.wakeupTime:''}"/></div>
+    <div class="photo-box" id="ae-wake-photo">${photoPlaceholderHtml('ae-wake','기상 사진 불러오는 중...','')}</div>
+    <input type="file" id="ae-wake-input" accept="image/*" hidden/>
+    <div class="section-title" style="margin:14px 0 6px;font-size:16px;">모닝루틴 체크 (시간 직접 수정 가능)</div>
+    <div id="ae-routine-list">${routineRows}</div>
+    <p class="cert-desc" style="margin-top:12px;">📷 모닝루틴 인증사진 (선택)</p>
+    <div class="photo-box" id="ae-act-photo">${photoPlaceholderHtml('ae-act','루틴 사진 불러오는 중...','')}</div>
+    <input type="file" id="ae-act-input" accept="image/*" hidden/>
+    <div class="form-actions">
+      <button class="btn btn-mini ghost" id="ae-cancel">취소</button>
+      <button class="btn btn-mini" id="ae-save">저장</button>
+    </div>
+  </div>`;
+}
+function bindAdminEditCard(){
+  const c = checkins.find(x=>x.id===editingRecordId);
+  if(!c) return;
+  const member = members.find(m=>m.id===c.memberId);
+  if(!member) return;
+
+  const wakeBox = document.getElementById('ae-wake-photo');
+  const actBox = document.getElementById('ae-act-photo');
+  const wakeInput = document.getElementById('ae-wake-input');
+  const actInput = document.getElementById('ae-act-input');
+
+  function showPhoto(box, dataUrl, savedKey, label){
+    if(dataUrl){ box.innerHTML = photoPreviewHtml(dataUrl); box.querySelector('.photo-remove').addEventListener('click', ()=>{
+      if(box===wakeBox) aeWakePhotoNew=null; else aeActPhotoNew=null;
+      loadAndShow();
+    }); return; }
+    if(savedKey){
+      loadPhoto(savedKey).then(url=>{
+        if(!url){ box.innerHTML = photoPlaceholderHtml('x', label, '사진 없음 · 탭해서 새로 첨부'); bindPh(); return; }
+        box.innerHTML = savedPhotoHtml(url);
+        box.querySelector('.photo-preview img').addEventListener('click', ()=> openPhotoOverlay(url));
+        box.querySelector('.photo-remove').addEventListener('click', async ()=>{
+          try{ await window.storage.delete(savedKey); }catch(e){}
+          if(box===wakeBox){ c.wakeupPhotoKey=null; c.wakeupPhoto=false; } else { c.activityPhotoKey=null; c.activityPhoto=false; }
+          toast('사진을 삭제했어요'); loadAndShow();
+        });
+      });
+      return;
+    }
+    box.innerHTML = photoPlaceholderHtml('x', label, '탭해서 사진 첨부');
+    bindPh();
+    function bindPh(){ box.querySelector('.photo-placeholder')?.addEventListener('click', ()=> (box===wakeBox?wakeInput:actInput).click()); }
+  }
+  function loadAndShow(){
+    showPhoto(wakeBox, aeWakePhotoNew, c.wakeupPhotoKey, '기상 사진');
+    showPhoto(actBox, aeActPhotoNew, c.activityPhotoKey, '루틴 사진');
+  }
+  loadAndShow();
+
+  wakeInput.addEventListener('change', async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    toast('사진 압축 중...');
+    try{ aeWakePhotoNew = await compressImage(file); loadAndShow(); toast('사진을 불러왔어요 · 저장을 눌러 반영하세요'); }
+    catch(err){ toast('사진 처리에 실패했어요'); }
+  });
+  actInput.addEventListener('change', async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    toast('사진 압축 중...');
+    try{ aeActPhotoNew = await compressImage(file); loadAndShow(); toast('사진을 불러왔어요 · 저장을 눌러 반영하세요'); }
+    catch(err){ toast('사진 처리에 실패했어요'); }
+  });
+
+  document.getElementById('ae-cancel').addEventListener('click', ()=>{
+    editingRecordId=null; aeWakePhotoNew=null; aeActPhotoNew=null; renderHistory();
+  });
+  document.getElementById('ae-save').addEventListener('click', async ()=>{
+    const wt = document.getElementById('ae-wake-time').value;
+    c.wakeupTime = wt || c.wakeupTime;
+    c.held = false;
+    if(!Array.isArray(c.routineChecks)) c.routineChecks = [null,null];
+    document.querySelectorAll('.ae-routine-chk').forEach(chk=>{
+      const i = Number(chk.dataset.idx);
+      const timeInput = document.querySelector(`.ae-routine-time[data-idx="${i}"]`);
+      const tVal = timeInput ? timeInput.value : '';
+      c.routineChecks[i] = chk.checked ? {done:true, time: tVal || (c.routineChecks[i]&&c.routineChecks[i].time) || '00:00'} : null;
+    });
+    if(aeWakePhotoNew){
+      c.wakeupPhotoKey = c.wakeupPhotoKey || ('gt:photo:'+c.id+':wakeup');
+      await savePhoto(c.wakeupPhotoKey, aeWakePhotoNew);
+      c.wakeupPhoto = true;
+    }
+    if(aeActPhotoNew){
+      c.activityPhotoKey = c.activityPhotoKey || ('gt:photo:'+c.id+':activity');
+      await savePhoto(c.activityPhotoKey, aeActPhotoNew);
+      c.activityPhoto = true;
+    }
+    /* 체크/사진을 바탕으로 모닝루틴 인증 시각 재계산 (사진만 있는 경우엔 사진 인증으로 인정) */
+    const routineCert = routineCertifiedTime(member, c.date, c.wakeupTime);
+    c.activityTime = routineCert || (aeActPhotoNew || c.activityPhoto ? (c.activityTime || nowHM()) : null);
+    await saveCheckins();
+    editingRecordId=null; aeWakePhotoNew=null; aeActPhotoNew=null;
+    toast('수정 내용을 저장했어요 🌱');
+    renderAll();
+  });
+}
+function renderAdminPanel(show){
+  const panel = document.getElementById('admin-login-panel');
+  if(!show){ panel.style.display='none'; panel.innerHTML=''; return; }
+
+  if(!adminMode){
+    panel.style.display='block';
+    if(currentUserEmail){
+      /* 이메일 로그인은 했지만 관리자로 등록된 계정이 아닌 경우 */
+      panel.innerHTML = `
+        <p style="font-size:17px;color:var(--ink-sub);line-height:1.6;">🔒 <b>${currentUserEmail}</b> 계정은 관리자 권한이 없어요.</p>
+        <button class="btn btn-mini ghost" id="admin-logout" style="width:100%;margin-top:8px;">로그아웃</button>`;
+      document.getElementById('admin-logout').addEventListener('click', adminLogout);
+      return;
+    }
+    /* 관리자 로그인 폼 (팀원은 이 화면을 볼 필요가 없어요) */
+    panel.innerHTML = `
+      <p style="font-size:17px;color:var(--ink-sub);">관리자 이메일과 비밀번호로 로그인하세요</p>
+      <input type="email" id="admin-email-input" class="login-input" placeholder="관리자 이메일" autocomplete="username"/>
+      <input type="password" id="admin-pw-input" class="login-input" placeholder="비밀번호" autocomplete="current-password" style="margin-top:8px;"/>
+      <button class="btn btn-mini" id="admin-login-confirm" style="width:100%;margin-top:10px;">로그인</button>
+      <p class="login-error" id="admin-login-error" style="display:none;"></p>`;
+    const doAdminLogin = async ()=>{
+      const email = document.getElementById('admin-email-input').value.trim();
+      const pw = document.getElementById('admin-pw-input').value;
+      const errEl = document.getElementById('admin-login-error');
+      errEl.style.display='none';
+      if(!email || !pw){ errEl.textContent='이메일과 비밀번호를 입력해주세요'; errEl.style.display='block'; return; }
+      try{
+        await adminLogin(email, pw);
+        toast(adminMode? '관리자 모드 ON 🔓' : '로그인은 됐지만 이 계정은 관리자 권한이 없어요');
+        renderAdminPanel(true);
+        renderAll();
+      }catch(e){
+        errEl.textContent = '이메일 또는 비밀번호가 올바르지 않아요';
+        errEl.style.display='block';
+      }
+    };
+    document.getElementById('admin-login-confirm').addEventListener('click', doAdminLogin);
+    document.getElementById('admin-pw-input').addEventListener('keydown', e=>{ if(e.key==='Enter') doAdminLogin(); });
+    return;
+  }
+  panel.style.display='block';
+
+  const emailRows = (settings.adminEmails||[]).map(em=>`
+    <div class="admin-email-row">
+      <span>${em}${em===currentUserEmail?' (나)':''}</span>
+      ${settings.adminEmails.length>1 ? `<button class="icon-btn" data-rm-admin="${em}">✕</button>` : ''}
+    </div>`).join('');
+
+  panel.innerHTML = `
+    <div class="section-title" style="margin:0 0 10px;font-size:20.2px;">⚙ 챌린지 설정</div>
+    <div class="form-row"><label>챌린지 시작일</label><input type="date" id="set-start" value="${settings.periodStart}"/></div>
+    <div class="form-row"><label>챌린지 종료일</label><input type="date" id="set-end" value="${settings.periodEnd}"/></div>
+    <div class="form-row"><label>기상 지각 기준 (분)</label><input type="number" id="set-grace" min="0" max="60" value="${settings.graceMin}"/></div>
+    <p style="font-size:16.5px;color:var(--ink-faint);margin:-2px 0 12px;">💡 팀원 PIN은 '팀원' 탭에서 각 팀원을 수정해 관리해요</p>
+    <div class="form-actions">
+      <button class="btn btn-mini ghost" id="set-close" style="flex:1">닫기</button>
+      <button class="btn btn-mini" id="set-save" style="flex:1">저장</button>
+    </div>
+
+    <div class="section-title" style="margin:16px 0 8px;font-size:18px;">👤 관리자 계정</div>
+    <p style="font-size:15.5px;color:var(--ink-faint);margin:-2px 0 10px;">아래 이메일로 로그인한 사람만 관리자 기능을 쓸 수 있어요. 새 관리자를 추가하려면 먼저 Firebase 콘솔에서 그 이메일로 계정을 만들어주세요.</p>
+    <div id="admin-email-list">${emailRows}</div>
+    <div class="pin-row">
+      <input type="email" id="new-admin-email" class="pin-input" placeholder="추가할 이메일" style="flex:0 0 65%;"/>
+      <button class="btn btn-mini" id="add-admin-email">추가</button>
+    </div>
+
+    <button class="btn btn-mini ghost" id="admin-logout" style="width:100%;margin-top:14px;">🔓 로그아웃</button>
+  `;
+  document.getElementById('set-close').addEventListener('click', ()=> renderAdminPanel(false));
+  document.getElementById('admin-logout').addEventListener('click', adminLogout);
+  document.querySelectorAll('[data-rm-admin]').forEach(b=>b.addEventListener('click', async ()=>{
+    const target = b.dataset.rmAdmin;
+    if(target===currentUserEmail && !confirm('본인 계정을 관리자에서 제외하면 다시 로그인해도 관리자 화면을 볼 수 없어요. 계속할까요?')) return;
+    settings.adminEmails = settings.adminEmails.filter(e=>e!==target);
+    await saveSettings();
+    adminMode = settings.adminEmails.includes(currentUserEmail);
+    toast('관리자 계정에서 제외했어요');
+    renderAdminPanel(adminMode);
+    renderAll();
+  }));
+  document.getElementById('add-admin-email').addEventListener('click', async ()=>{
+    const v = document.getElementById('new-admin-email').value.trim().toLowerCase();
+    if(!v || !v.includes('@')){ toast('올바른 이메일을 입력해주세요'); return; }
+    if(settings.adminEmails.includes(v)){ toast('이미 등록된 이메일이에요'); return; }
+    settings.adminEmails = [...(settings.adminEmails||[]), v];
+    await saveSettings();
+    toast('관리자로 추가했어요. 그 이메일 계정이 Firebase에도 있어야 로그인할 수 있어요');
+    renderAdminPanel(true);
+  });
+  document.getElementById('set-save').addEventListener('click', async ()=>{
+    const s = document.getElementById('set-start').value;
+    const e = document.getElementById('set-end').value;
+    const g = parseInt(document.getElementById('set-grace').value, 10);
+    if(!s || !e || isNaN(g)){ toast('값을 모두 입력해주세요'); return; }
+    if(parseDate(s) > parseDate(e)){ toast('시작일이 종료일보다 늦을 수 없어요'); return; }
+    settings.periodStart = s; settings.periodEnd = e; settings.graceMin = g;
+    await saveSettings();
+    calViewDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+    toast('챌린지 설정이 저장됐어요 🌱');
+    renderAdminPanel(false);
+    renderAll();
+  });
+}
+function bindAdminToggle(){
+  document.getElementById('btn-admin-toggle')?.addEventListener('click', ()=>{
+    const panel = document.getElementById('admin-login-panel');
+    const show = panel.style.display==='none' || panel.style.display==='';
+    renderAdminPanel(show);
+    if(show) panel.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+}
+
+/* ===================== Tabs ===================== */
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  activeTab = tab;
+  document.getElementById('sec-'+activeTab).classList.add('active');
+  document.getElementById('hero-card').style.display = (tab==='checkin') ? '' : 'none';
+  if(tab==='checkin'){ resetHeroWeekToToday(); renderHero(); }
+  if(tab==='calendar'){
+    /* 캘린더 탭에 들어올 때마다 핸드폰 기준 이번 달이 보이도록 초기화 */
+    calViewDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+    calDetailDate = null;
+    renderCalendar();
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+});
+
+/* ===================== Boot ===================== */
+function renderAll(){
+  if(heroWeekIdx===null) heroWeekIdx = currentWeekIndex();
+  renderHero(); renderDashboard(); renderCheckin(); renderCalendar(); renderMembers(); renderHistory();
+}
+/* 재방문 시, 최신 데이터를 기다리는 동안 마지막으로 봤던 화면을 먼저 보여주고
+   뒤에서 조용히 최신 데이터로 갱신해요 (첫 방문엔 캐시가 없어서 그냥 평소대로 로딩) */
+const LOCAL_CACHE_KEY = 'gt-local-cache-v1';
+function tryRenderFromLocalCache(){
+  try{
+    const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+    if(!raw) return false;
+    const cached = JSON.parse(raw);
+    if(!cached || !cached.members || !cached.checkins || !cached.settings) return false;
+    members = cached.members; checkins = cached.checkins; settings = cached.settings;
+    calViewDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+    renderAll();
+    hideBootSkeleton();
+    return true;
+  }catch(e){ return false; }
+}
+function saveLocalCache(){
+  try{ localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({members, checkins, settings})); }catch(e){}
+}
+async function bootApp(){
+  try{
+    const shownFromCache = tryRenderFromLocalCache();
+    await loadData();
+    adminMode = !!(currentUserEmail && settings.adminEmails && settings.adminEmails.includes(currentUserEmail));
+    renderAll();
+    hideBootSkeleton();
+    saveLocalCache();
+    attachLiveSync();
+    if(!firebaseReady){
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:998;background:#FBF1D9;color:#6B4E12;font-size:16px;font-weight:600;text-align:center;padding:10px 14px;border-bottom:1.5px solid #D9B75A;';
+      banner.textContent = '⚠️ 아직 Firebase 연결 전이에요 — 지금은 데이터가 새로고침하면 사라져요. 파일 안의 설정 안내를 따라 연결해주세요.';
+      document.body.appendChild(banner);
+    }
+  }catch(e){
+    hideBootSkeleton();
+    showFatalError('앱 실행 중 오류: ' + e.message + '<br><br><small style="color:#888;">' + (e.stack||'') + '</small>');
+  }
+}
+function hideBootSkeleton(){
+  const el = document.getElementById('boot-skeleton');
+  if(el){ el.style.transition='opacity .25s ease'; el.style.opacity='0'; setTimeout(()=>el.remove(), 260); }
+}
+/* 팀원은 로그인 없이 사용해요. 대신 앱이 조용히 '익명 로그인'을 해서
+   Firebase 보안 규칙(auth != null)을 만족시켜요 — 화면에는 아무 것도 뜨지 않아요. */
+async function ensureAnonymousSession(){
+  if(!auth || currentUserEmail) return; // 관리자로 로그인된 상태면 건드리지 않음
+  try{ if(!auth.currentUser) await auth.signInAnonymously(); }
+  catch(e){ console.error('익명 로그인 실패', e); }
+}
+/* 관리자 이메일/비밀번호 로그인 (⚙ 패널 안에서만 사용) */
+async function adminLogin(email, pw){
+  await auth.signInWithEmailAndPassword(email, pw);
+  currentUserEmail = email;
+  adminMode = !!(settings.adminEmails && settings.adminEmails.includes(email));
+}
+async function adminLogout(){
+  try{ await auth.signOut(); }catch(e){}
+  currentUserEmail = null;
+  adminMode = false;
+  await ensureAnonymousSession();
+  renderAdminPanel(false);
+  renderAll();
+}
+(async function init(){
+  if(firebaseReady && auth){
+    try{ await ensureAnonymousSession(); }catch(e){}
+  }
+  await bootApp();
+})();
+</script>
+</body>
+</html>
