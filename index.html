@@ -17,6 +17,25 @@
 </style>
 <title>⏰ 덱스모닝</title>
 
+<!-- 🔗 링크를 카톡·슬랙 등에 공유했을 때 보이는 배너 미리보기 (Open Graph) -->
+<meta name="description" content="덱스레이디들의 성장시간 — 월~금 기상 챌린지 (9.7–10.31)" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="덱스모닝" />
+<meta property="og:url" content="https://redbrendy.github.io/daex-morning/" />
+<meta property="og:title" content="덱스모닝 · 덱스레이디들의 성장시간" />
+<meta property="og:description" content="월~금 아침, 목표 시간에 일어나고 나만의 모닝루틴 2가지를 인증하는 챌린지 (9.7–10.31)" />
+<meta property="og:image" content="https://redbrendy.github.io/daex-morning/og-banner.png" />
+<meta property="og:image:secure_url" content="https://redbrendy.github.io/daex-morning/og-banner.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="덱스모닝 — 덱스레이디들의 성장시간" />
+<meta property="og:locale" content="ko_KR" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="덱스모닝 · 덱스레이디들의 성장시간" />
+<meta name="twitter:description" content="월~금 아침, 목표 시간에 일어나고 나만의 모닝루틴 2가지를 인증하는 챌린지 (9.7–10.31)" />
+<meta name="twitter:image" content="https://redbrendy.github.io/daex-morning/og-banner.png" />
+
 <!-- 📱 핸드폰 홈 화면에 저장했을 때 보일 앱 아이콘 설정 -->
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
@@ -314,7 +333,7 @@
   .cal-cell.partial{background:var(--gold-dim); color:#6B5210; font-weight:700;}
   .cal-cell.pending{background:#FBF1D9; color:#7A5A12; border:1px dashed #D9B75A; font-weight:700;}
   /* 주말대체인증으로 채운 평일 = 성공 배경이되 흐리게 */
-  .cal-cell.madeup{background:linear-gradient(135deg,#4A1D73,#7B4BB5); color:#fff; font-weight:700; opacity:.45;}
+  .cal-cell.madeup{background:linear-gradient(135deg,#4A1D73,#7B4BB5); color:#fff; font-weight:700; opacity:.34;}
   .cal-cell.madeup-late{background:linear-gradient(135deg,#4A1D73,#7B4BB5); color:#fff; font-weight:700; opacity:.28;}
   .cal-detail{background:var(--paper); border-radius:14px; box-shadow:var(--shadow); padding:14px; margin-top:10px;}
   .cal-history{max-height:420px; overflow-y:auto; -webkit-overflow-scrolling:touch;}
@@ -701,30 +720,30 @@ function dayStatus(member, dateStr){
   if(!c || !c.wakeupTime || c.held || c.wakeupTime==='보충'){
     const d = d0;
     /* ⭐ 수정된 부분: 주말(토·일)이고 그날 인증이 없으면
-       결석(🔥)이 아니라 '해당없음'으로 처리해서 결석 이모지가 뜨지 않게 함 */
+       '해당없음'으로 처리해서 캘린더에 표시되지 않게 함 */
     if(isWeekend(d)) return {code:'none', label:'', score:0, leaf:''};
     const ws = startOfWeek(d);
     const info = weekMissedInfo(member.id, ws);
     const idx = info.missed.indexOf(dateStr);
     const wasHeld = info.heldSet.has(dateStr);
-    /* ⭐ 오늘 당일 결석은 아직 하루가 끝나지 않았으므로, 불꽃(🔥) 대신
+    /* ⭐ 오늘 당일 미인증은 아직 하루가 끝나지 않았으므로 문구만 다르게 (이모지는 둘 다 없음)
        다른 미인증과 같은 흰 배경으로만 표시하고 이모지는 붙이지 않음 */
     if(idx >= 2) return isToday
       ? {code:'absent', label:'오늘 미인증', score:-100, leaf:''}
-      : {code:'absent', label:'🔥 다시도전', score:-100, leaf:'🔥'};
+      : {code:'absent', label:'미인증', score:-100, leaf:''};
     if(idx >= 0 && info.weekendChecked > idx){
-      if(wasHeld) return {code:'madeup', label:'✅ 미리 체크한 대체인증', score:-10, leaf:'✅'};
+      if(wasHeld) return {code:'madeup', label:'😆 미리 체크한 대체인증', score:-10, leaf:'😆'};
       return {code:'madeup-late', label:'🔁 뒤늦게 채운 대체인증(주말)', score:-70, leaf:'🔁'};
     }
     if(idx >= 0 && new Date() < sundayNoonOf(ws)){
       if(wasHeld) return {code:'pending', label:'⏳ 주말대체인증', score:0, leaf:'⏳'};
       return isToday
         ? {code:'absent', label:'오늘 미인증', score:-100, leaf:''}
-        : {code:'absent', label:'🔥 다시도전(주말 만회 가능)', score:-100, leaf:'🔥'};
+        : {code:'absent', label:'미인증 (주말 만회 가능)', score:-100, leaf:''};
     }
     return isToday
       ? {code:'absent', label:'오늘 미인증', score:-100, leaf:''}
-      : {code:'absent', label:'🔥 다시도전', score:-100, leaf:'🔥'};
+      : {code:'absent', label:'미인증', score:-100, leaf:''};
   }
   /* ⭐ 주말에 실제로 체크인(진짜 대체인증)했고, 그 주에 만회할 평일 결석이 있었다면
      평소 성공 이모지 대신 '뒤늦게 채운 대체인증(주말)'로 표시함 */
@@ -754,7 +773,7 @@ function dayStatus(member, dateStr){
     if(gp.rate >= 1) return {code:'late', label:'🎯 목표인증 (기상 실패)', score:-40, leaf:'🎯'};
     return {code:'late', label:`🎯 목표인증 ${gp.done}/${gp.total} (기상 실패)`, score:-Math.round(50-10*gp.rate), leaf:'🎯'};
   }
-  return {code:'latewake', label:'미인증 (기상·목표 모두 실패)', score:-50, leaf:''};
+  return {code:'latewake', label:'기상·목표 모두 실패', score:-50, leaf:''};
 }
 
 function getWeeksOfMonth(year, monthIdx){
@@ -831,7 +850,7 @@ function isBeforeRegistration(member, dateStr){
 }
 /* 누적성공률 = 100%에서 시작, 미션기간(또는 팀원등록일~목표종료일) 전체 평일 수를 기준으로 인증 결과만큼만 차감
    (덱스모닝성공 0, 기상성공만 -50, 목표인증만 -40~-45, 기상·목표 모두 실패 -50,
-    미리 체크한 대체인증 -10, 뒤늦게 채운 대체인증(주말) -70, 다시도전(결석) -100)
+    미리 체크한 대체인증 -10, 뒤늦게 채운 대체인증(주말) -70, 미인증(결석) -100)
    → 100% 기준 = 월~금 기상+루틴 인증을 목표기간 내내 완료
    → 120% 기준 = 100% 기준 + 주말도 전부 인증 (평일:주말 = 5:2 비율이므로 주말 인증 1건당 50점을 더해야
       전체 주말을 다 채웠을 때 정확히 +20%p가 되어 120%에 닿는다)
@@ -1143,10 +1162,10 @@ function renderDashboard(){
       <div class="legend-row"><div class="legend-dot" style="background:#C6A9E8"></div><div><b>🙂 기상성공 · 목표 1/2</b>기상은 성공, 목표는 절반만 달성</div><span class="pt">-2.5</span></div>
       <div class="legend-row"><div class="legend-dot" style="background:#C08A2E"></div><div><b>⏰ 기상성공</b>기상만 성공 (목표 미인증)</div><span class="pt">-5</span></div>
       <div class="legend-row"><div class="legend-dot" style="background:#B8912E"></div><div><b>🎯 목표인증</b>목표만 달성 (기상 실패)</div><span class="pt">-4 ~ -4.5</span></div>
-      <div class="legend-row"><div class="legend-dot" style="background:#DED6EE"></div><div><b>미인증</b>기상·목표 모두 실패</div><span class="pt">-5</span></div>
-      <div class="legend-row"><div class="legend-dot" style="background:#EDE3FA"></div><div><b>✅ 미리 체크한 대체인증</b>당일 체크해둔 날을 주말에 채운 경우</div><span class="pt">-1</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#DED6EE"></div><div><b>기상·목표 모두 실패</b>인증은 했지만 기상·목표 둘 다 놓친 날</div><span class="pt">-5</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#EDE3FA"></div><div><b>😆 미리 체크한 대체인증</b>당일 체크해둔 날을 주말에 채운 경우 (캘린더에는 연한 색으로 표시)</div><span class="pt">-1</span></div>
       <div class="legend-row"><div class="legend-dot" style="background:#C9A24E"></div><div><b>🔁 뒤늦게 채운 대체인증(주말)</b>체크 없이 놓쳤다가 주말에 채운 경우</div><span class="pt">-7</span></div>
-      <div class="legend-row"><div class="legend-dot" style="background:#DED6EE;border:1px solid #D9D0EA"></div><div><b>🔥 다시도전</b>오늘은 실패, 내일 다시도전</div><span class="pt">-10</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#fff;border:1px solid #D9D0EA"></div><div><b>미인증</b>인증을 아예 하지 않은 날</div><span class="pt">-10</span></div>
       <div class="legend-row"><div class="legend-dot" style="background:linear-gradient(135deg,#4A1D73,#7B4BB5)"></div><div><b>🎁 주말 추가인증 보너스</b>평일 5일을 모두 완전 성공한 주에 주말까지 인증하면 보너스가 붙어요</div><span class="pt">+5</span></div>
     </div>
     <div class="shared-note">🌿 이 데이터는 이 앱을 여는 모든 사람에게 공유돼요</div>
@@ -1553,7 +1572,7 @@ function setupPhotoUpload(prefix, timeFieldId, savedKey, member, ds){
       if(isWake){
         /* A안: 기상시간을 지우면 그날 전체가 미인증 처리된다는 걸 정확히 경고.
            실수로 지우는 걸 막기 위해 같은 경고를 두 번 확인받는다 */
-        const warnMsg = '⚠️ 기상 시간을 지우면 오늘 전체가 미인증(다시도전) 처리돼요.\n모닝루틴을 이미 체크했어도, 오늘 하루는 인증 실패로 바뀌어요.\n정말 삭제할까요?';
+        const warnMsg = '⚠️ 기상 시간을 지우면 오늘 전체가 미인증 처리돼요.\n모닝루틴을 이미 체크했어도, 오늘 하루는 인증 실패로 바뀌어요.\n정말 삭제할까요?';
         ok = confirm(warnMsg) && confirm(warnMsg);
       } else {
         ok = confirm('모닝루틴 인증 사진을 삭제할까요? (기상 인증과 해빗트래커 체크는 유지)');
@@ -2113,11 +2132,11 @@ function renderCalendar(){
       <div class="legend-row"><div class="legend-dot" style="background:#C6A9E8"></div>🙂 기상성공 · 목표 일부 달성</div>
       <div class="legend-row"><div class="legend-dot" style="background:#C08A2E"></div>🎯 목표인증 (기상 실패)</div>
       <div class="legend-row"><div class="legend-dot" style="background:#B8912E"></div>⏰ 기상성공 (목표 미인증)</div>
-      <div class="legend-row"><div class="legend-dot" style="background:#E9E2F4"></div>미인증 (기상·목표 모두 실패)</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#E9E2F4"></div>기상·목표 모두 실패</div>
       <div class="legend-row"><div class="legend-dot" style="background:#FBF1D9;border:1px dashed #D9B75A"></div>⏳ 주말대체인증보류</div>
-      <div class="legend-row"><div class="legend-dot" style="background:#EDE3FA"></div>✅ 미리 체크한 대체인증</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#C7B0E8"></div>😆 미리 체크한 대체인증 (연한 배경)</div>
       <div class="legend-row"><div class="legend-dot" style="background:#C9A24E"></div>🔁 뒤늦게 채운 대체인증(주말)</div>
-      <div class="legend-row"><div class="legend-dot" style="background:#fff;border:1px solid #D9D0EA"></div>🔥 오늘결석</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#fff;border:1px solid #D9D0EA"></div>미인증</div>
     </div>
   `;
 
